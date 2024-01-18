@@ -94,7 +94,7 @@ print(gcf,'FaceSet.png','-dpng','-r300');
 
 save('FacesCoordinates.mat','alpha','beta')
 close all;
-%% %%%%%%%%%% Generate Morphs %%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Generate Morphs %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clc;
 clear;
@@ -108,7 +108,7 @@ Step=1000;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Face1_ID=2;
 Face2_ID=10;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%% load the FaceSet %%%%%%
@@ -133,7 +133,7 @@ V=Face2_alpha'-Face1_alpha';
 Coords_alpha=Face1_alpha'+repmat(V,Step+2,1).*repmat(linspace(0,1,Step+2)',1,msz.n_shape_dim);
 
 V=Face2_beta'-Face1_beta';
-Coords_beta=Face1_beta'+repmat(V,Step+2,1).*repmat(linspace(0,1,Step+2)',1,msz.n_shape_dim);
+Coords_beta=Face1_beta'+repmat(V,Step+2,1).*repmat(linspace(0,1,Step+2)',1,msz.n_tex_dim);
 
 Coords_All=[Coords_alpha Coords_beta];
 Face1_All=[Face1_alpha' Face1_beta'];
