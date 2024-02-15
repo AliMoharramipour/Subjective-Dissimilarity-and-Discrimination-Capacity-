@@ -2,11 +2,11 @@
  
 This is the repository for the paper **Is subjective perceptual similarity metacognitive?** It is broken down into several directories, listed below. Each section will be described in more detail.
 
-1. **Analysis Code** - Used for analyzing and making charts from the collected data.
-2. **Collected Data** - Log files gathered from subjects while running the experiment.
-3. **Near Threshold Discrimination Task/src** - Source code for the near-threshold discrimination task.
-4. **Prepare Faces and Morphs** - Source code used to prepare the faces and morphs for the tasks.
-5. **Subjective Similarity Judgment Task** - Source code for the subjective similarity judgment task.
+**Analysis Code** - Used for analyzing and making charts from the collected data.
+**Collected Data** - Log files gathered from subjects while running the experiment.
+**Near Threshold Discrimination Task/src** - Source code for the near-threshold discrimination task.
+**Prepare Faces and Morphs** - Source code used to prepare the faces and morphs for the tasks.
+**Subjective Similarity Judgment Task** - Source code for the subjective similarity judgment task.
 
 The **pilot** folder contains all the codes and materials used in running our pilot study (N = 4 participants), all the data collected, and the analysis code ran on the data. 
 The **Main** folder contains all the codes and materials that will be used in the main study. 
