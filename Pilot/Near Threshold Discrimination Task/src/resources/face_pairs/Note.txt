@@ -1,0 +1,2 @@
+- The complete morph set for only two of the examined pairs is placed here, as an example. 
+- The other examined pairs' morph set (i.e., 3-5,13-20,14-27,15-24,14-16,5-17,10-17,7-12,13-30,22-23,2-10) can be made by running the second half of code "Generate_Faces_And_Morphs" shared inside the "Prepare Faces and Morphs" folder. 
