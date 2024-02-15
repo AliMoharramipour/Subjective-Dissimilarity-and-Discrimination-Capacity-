@@ -1,8 +1,8 @@
 # Subjective-Dissimilarity-and-Discrimination-Capacity 
  
 This is the repository for the paper **Is subjective perceptual similarity metacognitive?** It is broken down into several directories, listed below. Each section will be described in more detail.
-
-
+    
+   
   
 - **Analysis Code** - Used for analyzing and making charts from the collected data.
 
@@ -14,8 +14,8 @@ This is the repository for the paper **Is subjective perceptual similarity metac
 
 - **Subjective Similarity Judgment Task** - Source code for the subjective similarity judgment task.
 
-
-  
+     
+         
 The **pilot** folder contains all the codes and materials used in running our pilot study (N = 4 participants), all the data collected, and the analysis code ran on the data. 
 The **Main** folder contains all the codes and materials that will be used in the main study. 
 ## Near Threshold Discrimination Task
