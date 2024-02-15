@@ -44,6 +44,7 @@ The subject's dissimilarity space is represented by a 5-dimensional embedding, w
 
 ### Dissimilarity matrix formula
 Each trial is segmented into sets of three, consisting of the target face and a combination of two of the candidate faces. Within each set, the face that ranked lower is marked as the odd face. Subsequently, the dissimilarity value between a given pair *x* and *y* is calculated as follows. The instances that *x* and *y* were compared, where either of them was the target face, are selected. The ratio of instances where one of them was the odd face is calculated as the dissimilarity value. Two non-tested sets with obvious outcomes when one of the faces repeats is also considered in this calculation. This fundamentally involves adding 2 to both the numerator and the denominator when calculating the ratio. 
+
 It is noteworthy that in the code, we first calculated the similarity value (i.e., the ratio where none of the faces was marked as the odd face) and then calculated the dissimilarity value by subtracting one from the similarity value. 
 
 ### Logging
