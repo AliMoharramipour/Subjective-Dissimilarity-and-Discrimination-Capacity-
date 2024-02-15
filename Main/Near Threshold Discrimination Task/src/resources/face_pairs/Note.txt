@@ -1,2 +1,2 @@
-- The pairs will be decided after all participants perform the subjective similarity judgment task. 
+- The pairs will be selected after all participants perform the subjective similarity judgment task. 
 - The morphs will be made using the code shared inside "Prepare Morphs" folder
