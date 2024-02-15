@@ -57,7 +57,7 @@ This folder contains the data collected from the “subjective similarity judgme
 ## Analysis code 
 This folder contains the MATLAB codes for visualizing and analyzing the data.
 
-**VisualizeTheStaircasesInTheDiscriminationTask.m**: This code visualizes all the interleaved staircases ran on a subject in a single plot with subplots showcasing each pair’s staircase. 
+**VisualizeTheStaircasesInTheDiscriminationTask.m**: This code visualizes all the interleaved staircases ran on a subject, in a single plot with subplots showcasing each pair’s staircase. 
 
 **VisualizeTheSubjectiveSimilarityData**: This code prints the dissimilarity matrix (derived from the embeddings), and also visualizes it in a 2D-space by applying a 2D metric-MDS. The 2D space is rotated so that the first face (face01) is always located in x<0, y=0 coordinate.  
 
@@ -65,7 +65,8 @@ This folder contains the MATLAB codes for visualizing and analyzing the data.
 
 ## Prepare Faces and Morphs 
 We used the Basal Face Model (BFM) in our study to generate the faces. Our code is based off of the BFM model shared here https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads by Prof. Dr. T. Vetter. 
-**Generate_Faces_And_Morphs**  The first part of the code generates 30 faces semi-randomly from the BFM space as described in our paper. The second part of the code generates 1000 equally spaced morphs between any selected two faces from the 30 faces inside the “faces” folder (the faces used in our study). The two faces are selected by **Face1_ID** and **Face2_ID** variables in the code.
+
+**Generate_Faces_And_Morphs**: The first part of the code generates 30 faces semi-randomly from the BFM space as described in our paper. The second part of the code generates 1000 equally spaced morphs between any selected two faces from the 30 faces inside the “faces” folder (the faces used in our study). The two faces are selected by **Face1_ID** and **Face2_ID** variables in the code.
 
   
    
