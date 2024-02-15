@@ -52,7 +52,7 @@ It is noteworthy that in the code, we first calculated the similarity value (i.e
 This experiment runs on PsychoPy 2023, using Python version 3.8. 
 
 ## Collected data
-This folder contains the data collected from the “subjective similarity judgment” task and the “near-threshold discrimination task”
+This folder contains the data collected from the “subjective similarity judgment task" and the “near-threshold discrimination task”
 
 ## Analysis code 
 This folder contains the MATLAB codes for visualizing and analyzing the data.
