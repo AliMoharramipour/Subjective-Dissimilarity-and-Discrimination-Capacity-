@@ -45,7 +45,7 @@ The subject's dissimilarity space is represented by a 5-dimensional embedding, w
 	1. For each face in the dataset:
 		1. Run the body selector where this face is the target face.
 		2. Show the target face and candidate faces chosen by the body selector and have the subject rank the candidate faces.
-	2. Generate a new dissimilarity matrix based on all the rankings data collected to this point
+	2. Generate a new dissimilarity matrix based on all the ranking data collected up to this point.
 	3. Run metric MDS `fit_transform` on the new dissimilarity matrix, using the embedding output of the previous MDS as the seed. We use metric for all non burn-in iterations because it preserves the actual pairwise dissimilarity distance. Also, there are fewer zeros as a result of the burn-in iterations, and we can use the previous MDS as the seed.
 4. Find all remaining face pairs in the dissimilarity matrix which have no data associated with them, and run backfill trials to fill in missing data using the process described in (3).
 5. Save the dissimilarity matrix and the embeddings from the experiment for later use.
@@ -56,7 +56,18 @@ Each trial is segmented into sets of three, consisting of the target face and a 
 It is noteworthy that in the code, we first calculated the similarity value (i.e., the ratio where none of the faces was marked as the odd face) and then calculated the dissimilarity value by subtracting one from the similarity value. 
 
 ### Logging
-**“Add the logging info please”**
+The PsychoPy library automatically logs an `info.log`, which records experiment parameters and current machine parameters (the window, for example), as well as created objects and the location of mouse clicks including mouse down and mouse up. `warn.log` records the information from `info.log` that is at the `WARNING` level for debugging purposes. A `psychopy.log.csv` file is also created, which is currently not used.
+
+Aside from the automatic logging provided by PsychoPy, logging is also done manually on each click to `click_data.csv` and per each iteration to `run_data.csv`. We also output the actual dissimilarity matrix `dissim_matrix.csv`, the output embedding `output_embedding.csv`, and the dissimilarity matrix generated from the output embedding `dissim_matrix_from_embedding.csv`. All of these are written as CSV files to the output directory after each iteration (step `3` above, i.e. one full cycle of each face in the dataset).
+
+#### `click_data.csv`
+This tracks the iteration number, trial number, click time, click position, as well as the clicked stim and what the target and candidate stims were. The default click tracking in `info.log` was not enough for our use case as it only tracks click position. The iteration at the end of the experiment, where missing values are filled in the similarity matrix, is treated as the last numerical iteration in the experiment (`i+1`).
+
+#### `run_data.csv`
+This tracks data about the dissimilarity matrix change over time. Currently in production, the only metric we track with this log is `change_sim_matrix`, which is the change between the current dissimilarity matrix and the previous dissimilarity matrix per iteration. This is relevant because if the change is below `0.5`, which was set based on data from our pilot study, we immediately end step `3` of the experiment and move on to filling missing values in the dissimilarity matrix. At this point, the matrix is considered to be converged, so further iterations would not be helpful to gather more similarity data.
+
+In testing, when there is a known `target_matrix` passed to the algorithm, this log also tracks the change correlation of the embedding and the matrix generated from the embedding with the known `target_matrix`. 
+
 ### PsychoPy
 This experiment runs on PsychoPy 2023, using Python version 3.8. 
 
@@ -76,7 +87,3 @@ This folder contains the MATLAB codes for visualizing and analyzing the data.
 We used the Basal Face Model (BFM) in our study to generate the faces. Our code is based off of the BFM model shared here https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads by Prof. Dr. T. Vetter. 
 
 **Generate_Faces_And_Morphs**: The first part of the code generates 30 faces semi-randomly from the BFM space as described in our paper. The second part of the code generates 1000 equally spaced morphs between any selected two faces from the 30 faces inside the “faces” folder (the faces used in our study). The two faces are selected by **Face1_ID** and **Face2_ID** variables in the code.
-
-  
-   
-
