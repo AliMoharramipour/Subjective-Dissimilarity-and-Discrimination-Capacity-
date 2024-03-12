@@ -28,6 +28,7 @@ for n=1:length(SubjIDs)
     Data_JND_Read=[Data_JND_Address filesep Files(j).name filesep];
 
     figure('Position', [0 0 1920 1080]);
+    NDownslastTwenty=[];
     for i=1:size(Pairs,1)
         TextFile=fileread([Data_JND_Read 'staircase_' num2str(Pairs(i,1)) '-' num2str(Pairs(i,2)) '.log']);
         TextFile=strsplit(TextFile,'responseDistances');
@@ -35,6 +36,8 @@ for n=1:length(SubjIDs)
 
         DistanceVector=str2num(TextFile{1});
 
+        %%%% number of downs in the last 20 trials %%%%%
+        NDownslastTwenty(i)=sum(diff(DistanceVector(end-20:end))<0);
 
         TextFile=fileread([Data_JND_Read 'staircase_' num2str(Pairs(i,1)) '-' num2str(Pairs(i,2)) '.log']);
         TextFile=strsplit(TextFile,'responseValues');
@@ -55,7 +58,6 @@ for n=1:length(SubjIDs)
             end
         end
 
-
         subplot(4,4,i)
         for j=1:length(DistanceVector)
             if(AnswerVector(j)==1)
@@ -75,5 +77,10 @@ for n=1:length(SubjIDs)
 
     end
     print(gcf,['VisualizationStaircase-' SubjIDs{n} '.png'],'-dpng','-r300');
+
+    disp('****************************');
+    disp(['SubjID: ' SubjIDs{n}])
+    disp(['Number of staircases with less than 3 downs in their last 20 trials:' num2str(sum(NDownslastTwenty<3))])
+
 end
 close all;
