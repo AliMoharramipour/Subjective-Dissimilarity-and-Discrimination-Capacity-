@@ -4,7 +4,7 @@ This is the repository for the paper **Is subjective perceptual similarity metac
     
    
   
-- **Analysis Code** - Used for analyzing and making charts from the collected data.
+- **Analysis Code** - Used for analyzing and making plots from the collected data.
 
 - **Collected Data** - Log files gathered from subjects while running the experiment. 
 
@@ -61,7 +61,7 @@ The PsychoPy library automatically logs an `info.log`, which records experiment 
 Aside from the automatic logging provided by PsychoPy, logging is also done manually on each click to `click_data.csv` and per each iteration to `run_data.csv`. We also output the actual dissimilarity matrix `dissim_matrix.csv`, the output embedding `output_embedding.csv`, and the dissimilarity matrix generated from the output embedding `dissim_matrix_from_embedding.csv`. All of these are written as CSV files to the output directory after each iteration (step `3` above, i.e. one full cycle of each face in the dataset).
 
 #### `click_data.csv`
-This tracks the iteration number, trial number, click time, click position, as well as the clicked stim and what the target and candidate stims were. The default click tracking in `info.log` was not enough for our use case as it only tracks click position. The iteration at the end of the experiment, where missing values are filled in the similarity matrix, is treated as the last numerical iteration in the experiment (`i+1`).
+This tracks the iteration number, trial number, click time, click position, as well as the clicked stim and what the target and candidate stims were. The default click tracking in `info.log` was not enough for our use case as it only tracks click position. The iteration at the end of the experiment, where missing values are filled in the dissimilarity matrix, is treated as the last numerical iteration in the experiment (`i+1`).
 
 #### `run_data.csv`
 This tracks data about the dissimilarity matrix change over time. Currently in production, the only metric we track with this log is `change_sim_matrix`, which is the change between the current dissimilarity matrix and the previous dissimilarity matrix per iteration. This is relevant because if the change is below `0.5`, which was set based on data from our pilot study, we immediately end step `3` of the experiment and move on to filling missing values in the dissimilarity matrix. At this point, the matrix is considered to be converged, so further iterations would not be helpful to gather more similarity data.
@@ -77,9 +77,9 @@ This folder contains the data collected from the “subjective similarity judgme
 ## Analysis code 
 This folder contains the MATLAB codes for visualizing and analyzing the data.
 
-**VisualizeTheStaircasesInTheDiscriminationTask.m**: This code visualizes all the interleaved staircases ran on a subject, in a single plot with subplots showcasing each pair’s staircase. 
+**VisualizeTheStaircasesInTheDiscriminationTask.m**: This code visualizes all the interleaved staircases ran on a subject, in a single plot with subplots showcasing each pair’s staircase. Also, it prints the data quality check for each participant (i.e., the number of staircases with less than 3 downs in their last 20 trials). 
 
-**VisualizeTheSubjectiveSimilarityData**: This code prints the dissimilarity matrix (derived from the embeddings), and also visualizes it in a 2D-space by applying a 2D metric-MDS. The 2D space is rotated so that the first face (face01) is always located in x<0, y=0 coordinate.  
+**VisualizeTheSubjectiveSimilarityData**: This code prints the dissimilarity matrix (derived from the embeddings), and also visualizes it in a 2D-space by applying a 2D metric-MDS. The 2D space is rotated so that the first face (face01) is always located in x<0, y=0 coordinate. This code also displays the data quality check for each participant (i.e., the correlation between the dissimilarity matrix derived from the first-half and the second-half of trials; Note that it uses only the non-missing cells in both dissimilarity matrices in calculating their correlation).  
 
 **MainAnalysis**: This code applies all the analysis described in our paper and makes the plots shown in our pilot result figures.
 
