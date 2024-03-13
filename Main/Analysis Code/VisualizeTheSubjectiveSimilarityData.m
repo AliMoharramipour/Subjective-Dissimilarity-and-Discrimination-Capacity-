@@ -33,14 +33,17 @@ for n=1:length(SubjIDs)
     AllClicks=length(table2array(ClickData(:,1)));
     %%% First half DissimMatrix %%% 
     DissimMatrixFirstHalf=MakeDissimFromClickLoggings(ClickData,1:round(AllClicks/2),length(Dissim{n}));
+    DissimMatrixFirstHalf=dist(mdscale(DissimMatrixFirstHalf,5,'Criterion','metricstress','Start','random')');
     %%% Second half DissimMatrix %%% 
     DissimMatrixSecondHalf=MakeDissimFromClickLoggings(ClickData,round(AllClicks/2):AllClicks,length(Dissim{n}));
-    %%%% Correlation between the first and second half %%%
-    PickUpperTriangle=find(triu(ones(length(DissimMatrixFirstHalf),length(DissimMatrixFirstHalf)))==1);
+    DissimMatrixSecondHalf=dist(mdscale(DissimMatrixSecondHalf,5,'Criterion','metricstress','Start','random')');
+    %%%% Correlation between first and second half %%%
+    PickUpperTriangle=triu(ones(length(DissimMatrixFirstHalf),length(DissimMatrixFirstHalf)));
+    PickUpperTriangle(eye(length(DissimMatrixFirstHalf))==1)=0;
+    PickUpperTriangle=find(PickUpperTriangle);
     FirstHalf=DissimMatrixFirstHalf(PickUpperTriangle);
     SecondHalf=DissimMatrixSecondHalf(PickUpperTriangle);
-    UseCells=find(~isnan(FirstHalf) & ~isnan(SecondHalf) & FirstHalf~=0 & SecondHalf~=0);
-    r=corr(FirstHalf(UseCells),SecondHalf(UseCells));
+    r=corr(FirstHalf,SecondHalf,'Type','Spearman');
     disp('********************')
     disp(['Subject: ' SubjIDs{n}]);
     disp(['first-second half corr (excluding missing cells):' num2str(r)]);
