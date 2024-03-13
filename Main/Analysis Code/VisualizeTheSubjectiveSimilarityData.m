@@ -1,5 +1,6 @@
 clc;
 clear;
+rng("default")
 
 SubjIDs=%% No data collected yet %%
 
