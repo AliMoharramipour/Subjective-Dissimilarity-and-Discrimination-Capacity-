@@ -1,6 +1,10 @@
 clc;
 clear;
 
+%%% Add BayesFactor Matlab Package %%%
+addpath(genpath([pwd filesep 'BayesFactor Matlab Package']));
+installBayesFactor
+
 CurrentAddress=pwd;
 S=strsplit(CurrentAddress, filesep);
 S(end)=[];
@@ -64,11 +68,16 @@ Indexes=sub2ind(size(Dissim{1}),JND_Pairs(:,1),JND_Pairs(:,2));
 figure('Position', [0 0 1080 1080]);
 WithinCorr=[];
 WithinCorrPval=[];
+WithinCorrZval=[];
 for i=1:length(SubjIDs)
     subplot(2,2,i);
     plot(JNDs{i}(Indexes),Dissim{i}(Indexes),'o','lineWidth',4,'Color',[0 0.6 0.8]);
     grid on;
     [WithinCorr(i),WithinCorrPval(i)]=corr(JNDs{i}(Indexes),Dissim{i}(Indexes),'Type',CorrType);
+    %%%%% Z-value estimation %%%%%
+    Fr=0.5*log((1+WithinCorr(i))/(1-WithinCorr(i)));
+    WithinCorrZval(i)=sqrt((length(Indexes)-3)/1.06)*Fr;
+
     title(['Subj=' num2str(i) ', r=' num2str(WithinCorr(i)) ', p=' num2str(WithinCorrPval(i))]);
     hold on
     c = polyfit(JNDs{i}(Indexes),Dissim{i}(Indexes),1);
@@ -81,11 +90,6 @@ for i=1:length(SubjIDs)
     ylim([0.1 1])
 end
 print(gcf,'Within-Subject-Correlations.png','-dpng','-r300');
-
-X2=-2*sum(log(WithinCorrPval));
-FishersP=1-chi2cdf(X2,2*length(WithinCorrPval));
-disp('******* Fisher test ************')
-disp(['Pvalue=' num2str(FishersP)]);
 
 %%%%%%%%%%%%%%%%%%%%%%%%% Between Subjects %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Rvalues=[];
@@ -121,6 +125,7 @@ CorrOwn=[];
 CorrPerm=[];
 SigCorrPermutationTestLine=[];
 PvaluesPermutationTest=[];
+ZvaluesPermutationTest=[];
 for i=1:length(SubjIDs)
     DissimilaritySubject=Dissim{i}(Indexes);
     CorrOwn(i)=corr(ALLSubjectsJNDsZscored(:,i),DissimilaritySubject,'Type',CorrType);
@@ -138,12 +143,8 @@ for i=1:length(SubjIDs)
     CorrPermSorted=fliplr(sort(CorrPerm(i,:)));
     SigCorrPermutationTestLine(i)=CorrPermSorted(Limit);
     PvaluesPermutationTest(i)=find(CorrOwn(i)>=CorrPermSorted,1)/NPermutations;
+    ZvaluesPermutationTest(i)=(CorrOwn(i)-mean(CorrPermSorted))/std(CorrPermSorted);
 end
-
-X2=-2*sum(log(PvaluesPermutationTest));
-FishersP=1-chi2cdf(X2,2*length(PvaluesPermutationTest));
-disp('******* Fisher test ************')
-disp(['Pvalue=' num2str(FishersP)]);
 
 %%%%%% Visualization %%%%%%%%%%%
 Color_List=[0 0 1;1 0 0;0 1 0];
@@ -179,6 +180,72 @@ for i=1:size(Rvalues,1)
     text(i-0.125,Ylim(2)+Ylim(2)/20,['p:' num2str(PvaluesPermutationTest(i),'%0.5f')],'Color',[0 0 1],'FontSize',18);
 end
 print(gcf,'Between-Subjects_Correlations','-dpng','-r300');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Group-Stats %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%% Hypothesis 1 %%%%%%%%%%%%
+%%%Bootstraping to find the confidence interval%%%%%%
+%%%%%%%%
+NBootstrap=100000;
+%%%%%%%%
+Bootstrap_Indices=randi([1 length(WithinCorrZval)], [NBootstrap, length(WithinCorrZval)]);
+Z_mean_distribution=sort(mean(WithinCorrZval(Bootstrap_Indices),2));
+ConfidenceInterval1=[Z_mean_distribution(round(0.05*NBootstrap)) Z_mean_distribution(round(0.95*NBootstrap))];
+%%% T-test: BF, p-value %%%
+[BF1_0,p_value1_0]=bf.ttest(WithinCorrZval,0*ones(1,length(WithinCorrZval)));
+%%% Fisher's test %%%
+X2=-2*sum(log(WithinCorrPval));
+FishersP1=1-chi2cdf(X2,2*length(WithinCorrPval));
+%%%%%%%%%%%% Hypothesis 2 %%%%%%%%%%%%
+%%%Bootstraping to find the confidence interval%%%%%%
+%%%%%%%%
+NBootstrap=100000;
+%%%%%%%%
+Bootstrap_Indices=randi([1 length(ZvaluesPermutationTest)], [NBootstrap, length(ZvaluesPermutationTest)]);
+Z_mean_distribution2=sort(mean(ZvaluesPermutationTest(Bootstrap_Indices),2));
+ConfidenceInterval2=[Z_mean_distribution2(round(0.05*NBootstrap)) Z_mean_distribution2(round(0.95*NBootstrap))];
+%%% T-test: BF, p-value %%%
+[BF2_0,p_value2_0]=bf.ttest(ZvaluesPermutationTest,0*ones(1,length(ZvaluesPermutationTest)));
+%%% Fisher's test %%%
+X2=-2*sum(log(PvaluesPermutationTest));
+FishersP2=1-chi2cdf(X2,2*length(PvaluesPermutationTest));
+
+%%%%%%%%%%%%%%%% Show the stats %%%%%%%%%%%%%%%%%%%%%%%%
+figure('Position', [0 0 1200 600])
+%%%% Hypothesis 1 %%%%%%
+subplot(1,2,1);
+bar(mean(WithinCorrZval),'FaceColor',[0.5 0.5 0.5],'EdgeColor',[0.3 0.3 0.3],'LineWidth',1.5);
+hold on
+plot([1, 1],ConfidenceInterval1, '-k', 'LineWidth', 5);
+set(gca,'XTick',1,'XTickLabel','Hypothesis I');
+ylabel('z-value');
+set(gca,'fontsize',23);
+grid on;
+for i=1:length(WithinCorrZval)
+    plot(1+0.3*(1-2*rand(1)),WithinCorrZval(i),'o','LineWidth',5,'MarkerSize',8,'Color',[0.2 0.2 0.2]);
+end
+Ylim=ylim;
+Xlim=xlim;
+text(Xlim(1)+0.05,Ylim(2)-0.1,['95% CI:[' num2str(ConfidenceInterval1(1)) ', ' num2str(ConfidenceInterval1(2)) ']'],'FontSize',15);
+text(Xlim(1)+0.05,Ylim(2)-0.25,['t-test ' '; BF:' num2str(BF1_0) ', Pval:' num2str(p_value1_0)],'FontSize',15);
+text(Xlim(1)+0.05,Ylim(2)-0.4,['Fisher''s p-value: ' num2str(FishersP1)],'FontSize',15);
+%%%% Hypothesis 2 %%%%%%
+subplot(1,2,2);
+bar(mean(ZvaluesPermutationTest),'FaceColor',[0.5 0.5 0.5],'EdgeColor',[0.3 0.3 0.3],'LineWidth',1.5);
+hold on
+plot([1, 1],ConfidenceInterval2, '-k', 'LineWidth', 5);
+set(gca,'XTick',1,'XTickLabel','Hypothesis II');
+ylabel('z-value');
+set(gca,'fontsize',23);
+grid on;
+for i=1:length(ZvaluesPermutationTest)
+    plot(1+0.3*(1-2*rand(1)),ZvaluesPermutationTest(i),'o','LineWidth',5,'MarkerSize',8,'Color',[0.2 0.2 0.2]);
+end
+Ylim=ylim;
+Xlim=xlim;
+text(Xlim(1)+0.05,Ylim(2)-0.1,['95% CI:[' num2str(ConfidenceInterval2(1)) ', ' num2str(ConfidenceInterval2(2)) ']'],'FontSize',15);
+text(Xlim(1)+0.05,Ylim(2)-0.25,['t-test ' '; BF:' num2str(BF2_0) ', Pval:' num2str(p_value2_0)],'FontSize',15);
+text(Xlim(1)+0.05,Ylim(2)-0.4,['Fisher''s p-value: ' num2str(FishersP2)],'FontSize',15);
+print(gcf,'Group_Statistics.png','-dpng','-r300');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PairWise %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 z_JNDs=[];
