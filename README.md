@@ -40,18 +40,18 @@ The subject's dissimilarity space is represented by a 5-dimensional embedding, w
 
 ### Code flow
 1. Burn-in iterations, where candidates are chosen at random, are used to seed the initial dissimilarity matrix.
-2. An initial MDS is run on the output of the burn-in iterations. This initial MDS uses non metric MDS to account for the large number of missing values (i.e., the pairs with no ranking responses).
+2. A metric MDS is run on the output (dissimilarity matrix) of the burn-in iterations. We use a nonmetric MDS to fill in the missing cells of the dissimimilarity matrix prior to running the metric MDS (*Note: In the pilot, we didn't do this. We only applied the nonmetric MDS and directly used its embeddings)
 3. For each iteration:
 	1. For each face in the dataset:
 		1. Run the body selector where this face is the target face.
 		2. Show the target face and candidate faces chosen by the body selector and have the subject rank the candidate faces.
 	2. Generate a new dissimilarity matrix based on all the ranking data collected up to this point.
-	3. Run metric MDS `fit_transform` on the new dissimilarity matrix, using the embedding output of the previous MDS as the seed. We use metric for all non burn-in iterations because it preserves the actual pairwise dissimilarity distance. Also, there are fewer zeros as a result of the burn-in iterations, and we can use the previous MDS as the seed.
+	3. Run metric MDS `fit_transform` on the new dissimilarity matrix, using the embedding output of the previous MDS as the seed. We fill in the missing cells, similar to 2, prior to running the metric MDS (*Note: In the pilot, we ran the metric MDS without filling in the missing cells; The value of the missing cells was set to zero)
 4. Find all remaining face pairs in the dissimilarity matrix which have no data associated with them, and run backfill trials to fill in missing data using the process described in (3).
 5. Save the dissimilarity matrix and the embeddings from the experiment for later use.
 
 ### Dissimilarity matrix formula
-Each trial is segmented into sets of three, consisting of the target face and a combination of two of the candidate faces. Within each set, the face that ranked lower is marked as the odd face. Subsequently, the dissimilarity value between a given pair *x* and *y* is calculated as follows. The instances that *x* and *y* were compared, where either of them was the target face, are selected. The ratio of instances where one of them was the odd face is calculated as the dissimilarity value. Two non-tested sets with obvious outcomes when one of the faces repeats is also considered in this calculation. This fundamentally involves adding 2 to both the numerator and the denominator when calculating the ratio. 
+Each trial is segmented into sets of three, consisting of the target face and a combination of two of the candidate faces. Within each set, the face that ranked lower is marked as the odd face. Subsequently, the dissimilarity value between a given pair *x* and *y* is calculated as follows. The instances that *x* and *y* were compared, where either of them was the target face, are selected. The ratio of instances where one of them was the odd face is calculated as the dissimilarity value. Two non-tested sets with obvious outcomes when one of the faces repeats is also considered in this calculation. We added 0.5 to both the numerator and the denominator when calculating the ratio (*Note: in the pilot, we added 2 instead of 0.5. 0.5 is a better choice, so we use 0.5 in the main) 
 
 It is noteworthy that in the code, we first calculated the similarity value (i.e., the ratio where none of the faces was marked as the odd face) and then calculated the dissimilarity value by subtracting one from the similarity value. 
 
