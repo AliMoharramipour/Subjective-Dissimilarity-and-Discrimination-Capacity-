@@ -146,9 +146,9 @@ function DissimMatrix=MakeDissimFromClickLoggings(ClickData,clicksListIndex,NMat
             NonOdds=sum(ismember(SimTracker{i}(:,1),j))+sum(ismember(SimTracker{j}(:,1),i));
             if(All~=0)
                 if(NonOdds==0)
-                    DissimMatrix(i,j)=1-0.5/(All+2);
+                    DissimMatrix(i,j)=1-0.5/(All+0.5);
                 else
-                    DissimMatrix(i,j)=1-NonOdds/(All+2);
+                    DissimMatrix(i,j)=1-NonOdds/(All+0.5);
                 end
             end
         end
