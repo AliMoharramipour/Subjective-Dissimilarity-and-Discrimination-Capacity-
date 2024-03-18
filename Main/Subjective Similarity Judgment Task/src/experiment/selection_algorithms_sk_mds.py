@@ -90,17 +90,16 @@ class SelectionAlgorithm:
                 # if we have no data at all, set it to 1 (which becomes 0 in dissimilarity)
                 if sim_matrix_inter[x][y][0] == 0:
                     # set missing values to 1 so when we get dissimilarity they become 0 and skipped by MDS
-                    # this is definitely janky, maybe there's a cleaner way to do it
                     sim_matrix[x][y] = 1
                     sim_matrix[y][x] = 1
                     continue
                 # [7,0] This means x,y was compared 7 times but was never close. [15, 0] != [1, 0].
                 if sim_matrix_inter[x][y][0] > 0 and sim_matrix_inter[x][y][1] == 0:
-                    sim_matrix[x][y] = sim_matrix_inter[x][y][1] + 0.5 / (sim_matrix_inter[x][y][0] + 2)
-                    sim_matrix[y][x] = sim_matrix_inter[x][y][1] + 0.5 / (sim_matrix_inter[x][y][0] + 2)
+                    sim_matrix[x][y] = sim_matrix_inter[x][y][1] + 0.5 / (sim_matrix_inter[x][y][0] + 0.5)
+                    sim_matrix[y][x] = sim_matrix_inter[x][y][1] + 0.5 / (sim_matrix_inter[x][y][0] + 0.5)
                     continue
-                sim_matrix[x][y] = sim_matrix_inter[x][y][1] / (sim_matrix_inter[x][y][0] + 2)
-                sim_matrix[y][x] = sim_matrix_inter[x][y][1] / (sim_matrix_inter[x][y][0] + 2)
+                sim_matrix[x][y] = sim_matrix_inter[x][y][1] / (sim_matrix_inter[x][y][0] + 0.5)
+                sim_matrix[y][x] = sim_matrix_inter[x][y][1] / (sim_matrix_inter[x][y][0] + 0.5)
         """
         print(f"Sim matrix:\n{sim_matrix}")
         """
@@ -201,8 +200,6 @@ class SelectionAlgorithm:
         For each face pair (x, y), we ask:
             A) How many times are X and Y closer together?
             B) How many times are X and Y compared?
-        We then use A/(B+2) as the similarity value. The +2 is there because we implicitly include the times X is
-        compared to itself. So, 1 means completely similar and 0 means completely dissimilar.
 
         2:
         We then flip the sim matrix into a dissimilarity matrix and pass it into scikit-learn's MDS algorithm.
@@ -252,7 +249,16 @@ class SelectionAlgorithm:
         print(f"Dissimilarity matrix for first MDS:\n{dissim_matrix}")
         print(f"Starting burn-in MDS...")
         first_MDS_start_time = time.time()
-        M_prime = initial_mds.fit_transform(dissim_matrix)
+        # replace missing #
+        M_prime_init = initial_mds.fit_transform(dissim_matrix)
+        dissim_matrix_filled = matrix_utils.get_output_matrix_from_embedding(M_prime_init, len(dissim_matrix))
+        dissim_matrix_filled = dissim_matrix_filled / np.max(dissim_matrix_filled)
+        for n in range(len(dissim_matrix)):
+            for m in range(len(dissim_matrix)):
+                if (dissim_matrix[n, m] == 0):
+                    dissim_matrix[n, m] = dissim_matrix_filled[n, m]
+        M_prime = run_mds.fit_transform(dissim_matrix, M_prime_init)
+        ##################
         print(f"First MDS done, time taken = {time.time() - first_MDS_start_time}")
 
         for i in range(min(max_iterations, self.run_iterations)):
@@ -294,7 +300,16 @@ class SelectionAlgorithm:
             print(f"Total time for body selector this iteration was {body_selector_iter_time}")
             print(f"Starting MDS...")
             MDS_start_time = time.time()
+            # replace missing #
+            M_prime_init = initial_mds.fit_transform(dissim_matrix)
+            dissim_matrix_filled = matrix_utils.get_output_matrix_from_embedding(M_prime_init, len(dissim_matrix))
+            dissim_matrix_filled = dissim_matrix_filled / np.max(dissim_matrix_filled)
+            for n in range(len(dissim_matrix)):
+                for m in range(len(dissim_matrix)):
+                    if (dissim_matrix[n, m] == 0):
+                        dissim_matrix[n, m] = dissim_matrix_filled[n, m]
             M_prime = run_mds.fit_transform(dissim_matrix, M_prime)
+            ##################
             print(f"MDS done, time taken = {time.time() - MDS_start_time}")
 
             run_data["iteration"] = i
