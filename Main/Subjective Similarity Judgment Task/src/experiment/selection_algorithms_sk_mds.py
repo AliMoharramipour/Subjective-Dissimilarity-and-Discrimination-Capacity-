@@ -461,7 +461,7 @@ class SelectionAlgorithm:
             run_data["change_sim_matrix"] = la.norm(dissim_matrix.flatten() - prev_dissim_matrix.flatten())
             run_data_list.append(deepcopy(run_data))
             """
-            if run_data["change_sim_matrix"] < 0.5:
+            if run_data["change_sim_matrix"] < 0:
                 break
             """
 
