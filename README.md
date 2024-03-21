@@ -39,7 +39,7 @@ The subjective similarity judgment task is a similarity task where subjects rank
 The subject's dissimilarity space is represented by a 5-dimensional embedding, which we generate by passing a dissimilarity matrix to scikit-learn's [multidimensional scaling](https://scikit-learn.org/stable/modules/manifold.html#multidimensional-scaling) (MDS) `fit_transform` algorithm. The initial dissimilarity matrix is estimated based on the responses the subject provides in burn-in trials where the candidate faces, also known as the *body*, are selected at random. Outside of burn-in trials, the body is chosen by using a combination of algorithms based off of, and partially sourced from, **‌Active Ordinal Querying for Tuplewise Similarity Learning** (Canal et al., 2019). The output embedding from the MDS is passed to a body selector, which selects candidates that will maximize information gained at a given trial with a certain target face. For more information on the body selector algorithm, refer to Canal et al. 2019. 
 
 ### Code flow
-1. Burn-in iterations ('n_burn_ins'), where candidates are chosen at random, are used to seed the initial dissimilarity matrix.
+1. Burn-in iterations (`n_burn_ins`), where candidates are chosen at random, are used to seed the initial dissimilarity matrix.
 2. A metric MDS is run on the output (dissimilarity matrix) of the burn-in iterations. We use a nonmetric MDS to fill in the missing cells of the dissimimilarity matrix prior to running the metric MDS (*Note: In the pilot, we didn't do this. We only applied the nonmetric MDS and directly used its embeddings)
 3. For each iteration:
 	1. For each face in the dataset:
