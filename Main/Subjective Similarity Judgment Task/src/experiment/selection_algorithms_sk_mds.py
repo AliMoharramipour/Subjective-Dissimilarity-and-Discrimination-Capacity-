@@ -323,7 +323,7 @@ class SelectionAlgorithm:
 
             self.log_writer.write_all(click_data_list, run_data_list, M_prime, dissim_matrix, len(self.init_sim_matrix))
 
-            if run_data["change_sim_matrix"] < 0.5:
+            if run_data["change_sim_matrix"] < 0:
                 break
 
         """
