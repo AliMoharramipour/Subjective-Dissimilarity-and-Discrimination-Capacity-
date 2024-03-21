@@ -64,9 +64,7 @@ Aside from the automatic logging provided by PsychoPy, logging is also done manu
 This tracks the iteration number, trial number, click time, click position, as well as the clicked stim and what the target and candidate stims were. The default click tracking in `info.log` was not enough for our use case as it only tracks click position. The iteration at the end of the experiment, where missing values are filled in the dissimilarity matrix, is treated as the last numerical iteration in the experiment (`i+1`).
 
 #### `run_data.csv`
-This tracks data about the dissimilarity matrix change over time. Currently in production, the only metric we track with this log is `change_sim_matrix`, which is the change between the current dissimilarity matrix and the previous dissimilarity matrix per iteration. This is relevant because if the change is below `0.5`, which was set based on data from our pilot study, we immediately end step `3` of the experiment and move on to filling missing values in the dissimilarity matrix. At this point, the matrix is considered to be converged, so further iterations would not be helpful to gather more similarity data.
-
-In testing, when there is a known `target_matrix` passed to the algorithm, this log also tracks the change correlation of the embedding and the matrix generated from the embedding with the known `target_matrix`. 
+This tracks data about the dissimilarity matrix change over time. Currently in production, the only metric we track with this log is `change_sim_matrix`, which is the change between the current dissimilarity matrix and the previous dissimilarity matrix per iteration. 
 
 ### PsychoPy
 This experiment runs on PsychoPy 2023, using Python version 3.8. 
