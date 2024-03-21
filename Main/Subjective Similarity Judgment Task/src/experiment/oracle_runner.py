@@ -125,9 +125,9 @@ class OracleRunner:
 
         self.experiment_artist.draw_loading_screen()
         if self.num_tasks_done > 29:
-            core.wait(0.2)
+            core.wait(0.1)
         else:
-            core.wait(0.6)
+            core.wait(0.5)
 
         if self.num_tasks_done % 100 == 0:
             self.experiment_artist.draw_and_wait_on_break_screen()
