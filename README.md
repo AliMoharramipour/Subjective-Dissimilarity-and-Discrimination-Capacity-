@@ -36,24 +36,25 @@ This experiment runs on PsychoPy 2023, using Python version 3.8.
 ## Subjective Similarity Judgment Task
 The subjective similarity judgment task is a similarity task where subjects rank candidate faces based on how similar they are to a target face. The aim is to estimate the subjective dissimilarity value for each face pair, where dissimilarity is measured as a floating point number between 0 and 1. 
 
-The subject's dissimilarity space is represented by a 5-dimensional embedding, which we generate by passing a dissimilarity matrix to scikit-learn's [multidimensional scaling](https://scikit-learn.org/stable/modules/manifold.html#multidimensional-scaling) (MDS) `fit_transform` algorithm. The initial dissimilarity matrix is estimated based on the responses the subject provides in burn-in trials where the candidate faces, also known as the *body*, are selected at random. Outside of burn-in trials, the body is chosen by using a combination of algorithms based off of, and partially sourced from, **‌Active Ordinal Querying for Tuplewise Similarity Learning** (Canal, 2019). The output embedding from the MDS is passed to a body selector, which selects candidates that will maximize information gained at a given trial with a certain target face. For more information on the body selector algorithm, refer to Canal 2019. 
+The subject's dissimilarity space is represented by a 5-dimensional embedding, which we generate by passing a dissimilarity matrix to scikit-learn's [multidimensional scaling](https://scikit-learn.org/stable/modules/manifold.html#multidimensional-scaling) (MDS) `fit_transform` algorithm. The initial dissimilarity matrix is estimated based on the responses the subject provides in burn-in trials where the candidate faces, also known as the *body*, are selected at random. Outside of burn-in trials, the body is chosen by using a combination of algorithms based off of, and partially sourced from, **‌Active Ordinal Querying for Tuplewise Similarity Learning** (Canal et al., 2019). The output embedding from the MDS is passed to a body selector, which selects candidates that will maximize information gained at a given trial with a certain target face. For more information on the body selector algorithm, refer to Canal et al. 2019. 
 
 ### Code flow
-1. Burn-in iterations, where candidates are chosen at random, are used to seed the initial dissimilarity matrix.
-2. An initial MDS is run on the output of the burn-in iterations. This initial MDS uses non metric MDS to account for the large number of missing values (i.e., the pairs with no ranking responses).
+1. Burn-in iterations (`n_burn_ins`), where candidates are chosen at random, are used to seed the initial dissimilarity matrix.
+2. A metric MDS is run on the output (dissimilarity matrix) of the burn-in iterations. We use a nonmetric MDS to fill in the missing cells of the dissimimilarity matrix prior to running the metric MDS (*Note: In the pilot, we didn't do this. We only applied the nonmetric MDS and directly used its embeddings)
 3. For each iteration:
 	1. For each face in the dataset:
 		1. Run the body selector where this face is the target face.
 		2. Show the target face and candidate faces chosen by the body selector and have the subject rank the candidate faces.
 	2. Generate a new dissimilarity matrix based on all the ranking data collected up to this point.
-	3. Run metric MDS `fit_transform` on the new dissimilarity matrix, using the embedding output of the previous MDS as the seed. We use metric for all non burn-in iterations because it preserves the actual pairwise dissimilarity distance. Also, there are fewer zeros as a result of the burn-in iterations, and we can use the previous MDS as the seed.
-4. Find all remaining face pairs in the dissimilarity matrix which have no data associated with them, and run backfill trials to fill in missing data using the process described in (3).
-5. Save the dissimilarity matrix and the embeddings from the experiment for later use.
+	3. Run metric MDS `fit_transform` on the new dissimilarity matrix, using the embedding output of the previous MDS as the seed. We fill in the missing cells, similar to (2), prior to running the metric MDS (*Note: In the pilot, we ran the metric MDS without filling in the missing cells; The value of the missing cells was set to zero)
+4. Repeat (3) for `num_iterations` 
+5. Find all remaining face pairs in the dissimilarity matrix which have no data associated with them, and run backfill trials to fill in missing data using the process described in (3).
+6. Save the dissimilarity matrix and the embeddings from the experiment for later use.
 
 ### Dissimilarity matrix formula
-Each trial is segmented into sets of three, consisting of the target face and a combination of two of the candidate faces. Within each set, the face that ranked lower is marked as the odd face. Subsequently, the dissimilarity value between a given pair *x* and *y* is calculated as follows. The instances that *x* and *y* were compared, where either of them was the target face, are selected. The ratio of instances where one of them was the odd face is calculated as the dissimilarity value. Two non-tested sets with obvious outcomes when one of the faces repeats is also considered in this calculation. This fundamentally involves adding 2 to both the numerator and the denominator when calculating the ratio. 
+Each trial is segmented into sets of three, consisting of the target face and a combination of two of the candidate faces. Within each set, the face that ranked lower is marked as the odd face. Subsequently, the dissimilarity value between a given pair *x* and *y* is calculated as follows. The instances that *x* and *y* were compared, where either of them was the target face, are selected. The ratio of instances where one of them was the odd face is calculated as the dissimilarity value. We added 0.5 to both the numerator and the denominator when calculating this ratio to avoid getting a dissimilarity value of zero (only the diagonal value of the dissimilarity matrix should be zero) (*Note: in the pilot, we added 2 instead of 0.5. 0.5 is a better choice, so we use 0.5 in the main code) 
 
-It is noteworthy that in the code, we first calculated the similarity value (i.e., the ratio where none of the faces was marked as the odd face) and then calculated the dissimilarity value by subtracting one from the similarity value. 
+It is noteworthy that in the code, we first calculate the similarity value (i.e., the ratio where none of the faces was marked as the odd face) and then calculate the dissimilarity value by subtracting one from the similarity value. 
 
 ### Logging
 The PsychoPy library automatically logs an `info.log`, which records experiment parameters and current machine parameters (the window, for example), as well as created objects and the location of mouse clicks including mouse down and mouse up. `warn.log` records the information from `info.log` that is at the `WARNING` level for debugging purposes. A `psychopy.log.csv` file is also created, which is currently not used.
@@ -64,9 +65,7 @@ Aside from the automatic logging provided by PsychoPy, logging is also done manu
 This tracks the iteration number, trial number, click time, click position, as well as the clicked stim and what the target and candidate stims were. The default click tracking in `info.log` was not enough for our use case as it only tracks click position. The iteration at the end of the experiment, where missing values are filled in the dissimilarity matrix, is treated as the last numerical iteration in the experiment (`i+1`).
 
 #### `run_data.csv`
-This tracks data about the dissimilarity matrix change over time. Currently in production, the only metric we track with this log is `change_sim_matrix`, which is the change between the current dissimilarity matrix and the previous dissimilarity matrix per iteration. This is relevant because if the change is below `0.5`, which was set based on data from our pilot study, we immediately end step `3` of the experiment and move on to filling missing values in the dissimilarity matrix. At this point, the matrix is considered to be converged, so further iterations would not be helpful to gather more similarity data.
-
-In testing, when there is a known `target_matrix` passed to the algorithm, this log also tracks the change correlation of the embedding and the matrix generated from the embedding with the known `target_matrix`. 
+This tracks data about the dissimilarity matrix change over time. Currently in production, the only metric we track with this log is `change_sim_matrix`, which is the change between the current dissimilarity matrix and the previous dissimilarity matrix per iteration. 
 
 ### PsychoPy
 This experiment runs on PsychoPy 2023, using Python version 3.8. 
