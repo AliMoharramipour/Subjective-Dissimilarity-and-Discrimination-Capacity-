@@ -129,7 +129,7 @@ class OracleRunner:
         else:
             core.wait(0.5)
 
-        if self.num_tasks_done % 100 == 0:
+        if self.num_tasks_done % 90 == 0:
             self.experiment_artist.draw_and_wait_on_break_screen()
             self.experiment_artist.draw_bg_color([0, 0, 0])
 
