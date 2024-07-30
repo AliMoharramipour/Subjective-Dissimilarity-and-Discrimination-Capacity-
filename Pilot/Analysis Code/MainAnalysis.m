@@ -189,7 +189,7 @@ NBootstrap=100000;
 %%%%%%%%
 Bootstrap_Indices=randi([1 length(WithinCorrZval)], [NBootstrap, length(WithinCorrZval)]);
 Z_mean_distribution=sort(mean(WithinCorrZval(Bootstrap_Indices),2));
-ConfidenceInterval1=[Z_mean_distribution(round(0.05*NBootstrap)) Z_mean_distribution(round(0.95*NBootstrap))];
+ConfidenceInterval1=[Z_mean_distribution(round(0.025*NBootstrap)) Z_mean_distribution(round(0.975*NBootstrap))];
 %%% T-test: BF, p-value %%%
 [BF1_0,p_value1_0]=bf.ttest(WithinCorrZval,0*ones(1,length(WithinCorrZval)));
 %%% Fisher's test %%%
@@ -202,7 +202,7 @@ NBootstrap=100000;
 %%%%%%%%
 Bootstrap_Indices=randi([1 length(ZvaluesPermutationTest)], [NBootstrap, length(ZvaluesPermutationTest)]);
 Z_mean_distribution2=sort(mean(ZvaluesPermutationTest(Bootstrap_Indices),2));
-ConfidenceInterval2=[Z_mean_distribution2(round(0.05*NBootstrap)) Z_mean_distribution2(round(0.95*NBootstrap))];
+ConfidenceInterval2=[Z_mean_distribution2(round(0.025*NBootstrap)) Z_mean_distribution2(round(0.975*NBootstrap))];
 %%% T-test: BF, p-value %%%
 [BF2_0,p_value2_0]=bf.ttest(ZvaluesPermutationTest,0*ones(1,length(ZvaluesPermutationTest)));
 %%% Fisher's test %%%
