@@ -48,11 +48,11 @@ The subject's dissimilarity space is represented by a 5-dimensional embedding, w
 	2. Generate a new dissimilarity matrix based on all the ranking data collected up to this point.
 	3. Run metric MDS `fit_transform` on the new dissimilarity matrix, using the embedding output of the previous MDS as the seed. We fill in the missing cells, similar to (2), prior to running the metric MDS (*Note: In the pilot, we ran the metric MDS without filling in the missing cells; The value of the missing cells was set to zero)
 4. Repeat (3) for `num_iterations` 
-5. Find all remaining face pairs in the dissimilarity matrix which have no data associated with them, and run backfill trials to fill in missing data using the process described in (3).
+5. Find all remaining face pairs in the dissimilarity matrix which have no data associated with them, and run backfill trials to fill in missing data using the process described in (3). (*We didn't have this step in the Pilot)
 6. Save the dissimilarity matrix and the embeddings from the experiment for later use.
 
 ### Dissimilarity matrix formula
-Each trial is segmented into sets of three, consisting of the target face and a combination of two of the candidate faces. Within each set, the face that ranked lower is marked as the odd face. Subsequently, the dissimilarity value between a given pair *x* and *y* is calculated as follows. The instances that *x* and *y* were compared, where either of them was the target face, are selected. The ratio of instances where one of them was the odd face is calculated as the dissimilarity value. We added 0.5 to both the numerator and the denominator when calculating this ratio to avoid getting a dissimilarity value of zero (only the diagonal value of the dissimilarity matrix should be zero) (*Note: in the pilot, we added 2 instead of 0.5. 0.5 is a better choice, so we use 0.5 in the main code) 
+Each trial is segmented into sets of three, consisting of the target face and a combination of two of the candidate faces. Within each set, the face that ranked lower is marked as the odd face. Subsequently, the dissimilarity value between a given pair *x* and *y* is calculated as follows. The instances that *x* and *y* were compared, where either of them was the target face, are selected. The ratio of instances where one of them was the odd face is calculated as the dissimilarity value. We added 0.5 to both the numerator and the denominator when calculating this ratio to avoid getting a dissimilarity value of zero (only the diagonal value of the dissimilarity matrix should be zero) (*Note: in the pilot, we added 2 instead of 0.5. 0.5 may be a better choice, so we use 0.5 in the main code) 
 
 It is noteworthy that in the code, we first calculate the similarity value (i.e., the ratio where none of the faces was marked as the odd face) and then calculate the dissimilarity value by subtracting one from the similarity value. 
 
@@ -78,11 +78,11 @@ This folder contains the MATLAB codes for visualizing and analyzing the data.
 
 **VisualizeTheStaircasesInTheDiscriminationTask.m**: This code visualizes all the interleaved staircases ran on a subject, in a single plot with subplots showcasing each pair’s staircase. Also, it prints the data quality check for each participant (i.e., the number of staircases with less than 3 downs in their last 20 trials). 
 
-**VisualizeTheSubjectiveSimilarityData**: This code prints the dissimilarity matrix (derived from the embeddings), and also visualizes it in a 2D-space by applying a 2D metric-MDS. The 2D space is rotated so that the first face (face01) is always located in x<0, y=0 coordinate. This code also displays the data quality check for each participant (i.e., the correlation between the dissimilarity matrix derived from the first-half and the second-half of trials.  
+**VisualizeTheSubjectiveSimilarityData**: This code prints the dissimilarity matrix (derived from the embeddings), and also visualizes it in a 2D-space by applying a 2D metric-MDS. The 2D space is rotated so that the first face (face01) is always located in x<0, y=0 coordinate. This code also displays the data quality check for each participant (i.e., the correlation between the dissimilarity matrix derived from the first-half and the second-half of trials).  
 
 **MainAnalysis**: This code applies all the analysis described in our paper and makes the plots shown in our pilot result figures.
 
 ## Prepare Faces and Morphs 
 We used the Basal Face Model (BFM) in our study to generate the faces. Our code is based off of the BFM model shared here https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads by Prof. Dr. T. Vetter. 
 
-**Generate_Faces_And_Morphs**: The first part of the code generates 30 faces semi-randomly from the BFM space as described in our paper. The second part of the code generates 1000 equally spaced morphs between any selected two faces from the 30 faces inside the “faces” folder (the faces used in our study). The two faces are selected by **Face1_ID** and **Face2_ID** variables in the code.
+**Generate_Faces_And_Morphs**: The first part of the code generates 30 faces semi-randomly from the BFM space as described in our paper. The second part of the code generates 1000 equally spaced morphs between any selected two faces from the 30 faces inside the “faces” folder (the faces used in our study). The two faces are selected by `Face1_ID`  and `Face2_ID` variables in the code.
