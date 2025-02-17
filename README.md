@@ -48,7 +48,7 @@ The subject's dissimilarity space is represented by a 5-dimensional embedding, w
 	2. Generate a new dissimilarity matrix based on all the ranking data collected up to this point.
 	3. Run metric MDS `fit_transform` on the new dissimilarity matrix, using the embedding output of the previous MDS as the seed. We fill in the missing cells, similar to (2), prior to running the metric MDS (*Note: In the pilot, we ran the metric MDS without filling in the missing cells; The value of the missing cells was set to zero)
 4. Repeat (3) for `num_iterations` 
-5. Find all remaining face pairs in the dissimilarity matrix which have no data associated with them, and run backfill trials to fill in missing data using the process described in (3). (*We didn't have this step in the Pilot)
+5. (optional) Find all remaining face pairs in the dissimilarity matrix which have no data associated with them, and run backfill trials to fill in missing data using the process described in (3). (*We didn't have this step in the study)
 6. Save the dissimilarity matrix and the embeddings from the experiment for later use.
 
 ### Dissimilarity matrix formula
