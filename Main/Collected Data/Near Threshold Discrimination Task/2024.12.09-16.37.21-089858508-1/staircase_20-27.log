@@ -1,0 +1,6 @@
+﻿reversalDistances	100	740	260	460	140	380	300	460	380	500	420	440	400	420	400	440	420	460
+reversalIndices	1	4	7	9	13	17	18	22	26	30	38	40	44	46	48	51	52	55
+responseDistances	500	100	420	740	740	500	500	260	460	460	300	300	140	140	260	260	380	380	300	380	380	460	460	420	420	380	380	420	460	500	500	480	480	460	460	440	440	420	420	440	440	420	420	400	400	420	420	400	400	420	440	440	420	440	460	460	440	440	420	420
+responseValues	True	False	False	True	True	True	True	False	True	True	True	True	True	False	True	False	True	True	False	True	False	True	True	True	True	True	False	False	False	True	True	True	True	True	True	True	True	True	False	True	True	True	True	True	False	True	True	True	False	False	True	True	False	False	True	True	True	True	True	True
+responseMorphIDs	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	59	315	485	656	587	816	940	353	424	500	192	828	761	796	668	496	378	354	43	593	508	817	954	325	871	571	954	289	961	874
+candidateMorphs	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	[59, 559]	[315, 795]	[485, 965]	[656, 196]	[587, 127]	[816, 376]	[940, 500]	[353, 773]	[424, 4]	[500, 940]	[192, 632]	[828, 408]	[761, 341]	[796, 396]	[668, 268]	[496, 916]	[378, 798]	[354, 754]	[43, 443]	[593, 173]	[508, 68]	[817, 377]	[954, 534]	[325, 765]	[871, 411]	[571, 111]	[954, 514]	[289, 729]	[961, 541]	[874, 454]

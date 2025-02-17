@@ -2,7 +2,28 @@ clc;
 clear;
 rng("default")
 
-SubjIDs=%% No data collected yet %%
+%%%%%%%%%%**************** Choose dissimilarity matrix calculation approach **************%%%%%%%%%%%
+DissimCalculateApproach='ML'; %%% 'ML','MDS_5d','MDS_2d'
+EnablePlot=1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SubjIDs={'108169884-1','108169884-2',...
+         '695758433-1','695758433-2',...
+         '619502508-1','619502508-2',...
+         '584740030-1','584740030-2',...
+         '089858508-1','089858508-2',...
+         '801165888-1','801165888-2',...
+         '040062257-1','040062257-2',...
+         '940332894-1','940332894-2',...
+         '518402380-1','518402380-2',...
+         '415090147-1','415090147-2',...
+         '951506687-1','951506687-2',...
+         '682207766-1','682207766-2',...
+         };
+Reps=[1 2;3 4;5 6;7 8;9 10;11 12;13 14;15 16;17 18;19 20;21 22;23 24]; %%% Same subject data index %%%
+
+L1L2=repmat([0.00025 0.00025],24,1); %%% L1,L2 hyperparameters of the ML approach
+
 
 %%%%%%%% Data Address %%%%%%
 CurrentAddress=pwd;
@@ -17,6 +38,7 @@ Data_Sim_Address=[Data_Sim_Address 'Collected Data' filesep 'Subjective Similari
 
 %%%%% Load the dissim matrix %%%%%%
 Dissim=[];
+SessionQuality=[];
 for n=1:length(SubjIDs)
     
     Files=dir(Data_Sim_Address);
@@ -26,17 +48,43 @@ for n=1:length(SubjIDs)
             break;
         end
     end
-    load([Data_Sim_Address filesep Files(j).name filesep 'dissim_matrix_from_embedding.csv'])
-    Dissim{n}=dissim_matrix_from_embedding;
 
-    %%%%%%%%%%% QualityCheck (Test-retest, correlation between the first and second-half) %%%%%%%%%%%
+    disp('********************');
+    disp(Files(j).name);
+    
+    switch DissimCalculateApproach
+
+        case 'MDS_5d'
+            load([Data_Sim_Address filesep Files(j).name filesep 'dissim_matrix.csv']);
+            dissim_matrix(dissim_matrix==0)=nan;
+            dissim_matrix(eye(size(dissim_matrix))==1)=0;
+            Dissim{n}=dist(mdscale(dissim_matrix,5,'Criterion','metricstress','Start','random')')';
+            Dissim{n}=Dissim{n}/max(Dissim{n}(:));
+
+        case 'MDS_2d'
+            load([Data_Sim_Address filesep Files(j).name filesep 'dissim_matrix.csv']);
+            dissim_matrix(dissim_matrix==0)=nan;
+            dissim_matrix(eye(size(dissim_matrix))==1)=0;
+            Dissim{n}=dist(mdscale(dissim_matrix,2,'Criterion','metricstress','Start','random')')';
+            Dissim{n}=Dissim{n}/max(Dissim{n}(:));
+
+        case 'ML'
+            ML_Approach_Embeddings=readtable([Data_Sim_Address filesep Files(j).name filesep 'ML_Approach' filesep 'Space_' num2str(L1L2(n,1)) '_' num2str(L1L2(n,2)) '.csv']);
+            ML_Approach_Embeddings=table2array(ML_Approach_Embeddings(2:end,:));
+            Std_Embeddings=std(ML_Approach_Embeddings); 
+            Std_Embeddings_Percent=100*Std_Embeddings/sum(Std_Embeddings);
+            Dissim{n}=dist(ML_Approach_Embeddings');
+            Dissim{n}=Dissim{n}/max(Dissim{n}(:));
+    end
+
+    %%%%%%%%%%% QualityCheck within a session (Test-retest, correlation between the first and second-half) %%%%%%%%%%%
     ClickData=readtable([Data_Sim_Address filesep Files(j).name filesep 'click_data.csv']);
     AllClicks=length(table2array(ClickData(:,1)));
-    %%% First half DissimMatrix %%% 
+    %%% First half DissimMatrix %%%
     DissimMatrixFirstHalf=MakeDissimFromClickLoggings(ClickData,1:round(AllClicks/2),length(Dissim{n}));
     DissimMatrixFirstHalf=dist(mdscale(DissimMatrixFirstHalf,5,'Criterion','metricstress','Start','random')');
-    %%% Second half DissimMatrix %%% 
-    DissimMatrixSecondHalf=MakeDissimFromClickLoggings(ClickData,round(AllClicks/2):AllClicks,length(Dissim{n}));
+    %%% Second half DissimMatrix %%%
+    DissimMatrixSecondHalf=MakeDissimFromClickLoggings(ClickData,(round(AllClicks/2)+1):AllClicks,length(Dissim{n}));
     DissimMatrixSecondHalf=dist(mdscale(DissimMatrixSecondHalf,5,'Criterion','metricstress','Start','random')');
     %%%% Correlation between first and second half %%%
     PickUpperTriangle=triu(ones(length(DissimMatrixFirstHalf),length(DissimMatrixFirstHalf)));
@@ -44,64 +92,67 @@ for n=1:length(SubjIDs)
     PickUpperTriangle=find(PickUpperTriangle);
     FirstHalf=DissimMatrixFirstHalf(PickUpperTriangle);
     SecondHalf=DissimMatrixSecondHalf(PickUpperTriangle);
-    r=corr(FirstHalf,SecondHalf,'Type','Spearman');
-    disp('********************')
-    disp(['Subject: ' SubjIDs{n}]);
-    disp(['first-second half corr (excluding missing cells):' num2str(r)]);
+    SessionQuality(n)=corr(FirstHalf,SecondHalf,'Type','Spearman');
     
+    disp(['Subject: ' SubjIDs{n}]);
+    disp(['first-second half corr:' num2str(SessionQuality(n))]);
 
-    imagesc(dissim_matrix_from_embedding,[0 1]);
-    colormap(gray)
-    axis off
-    colorbar
-    set(gca,'fontsize',16);
-    print(gcf,['VisualizationDissimilarityMatrix-' SubjIDs{n} '.png'],'-dpng','-r300');
-end
-close all
+    if(EnablePlot)
+        figure
+        imagesc(Dissim{n},[0 1]);
+        colormap(gray)
+        axis off
+        colorbar
+        set(gca,'fontsize',16);
+        print(gcf,['Visualization Dissimilarity Matrix-' SubjIDs{n} '_' DissimCalculateApproach '.png'],'-dpng','-r300');
 
-%%%%%% Show in a 2D space %%%%%%%
-for n=1:length(SubjIDs)
+        switch DissimCalculateApproach
+            case {'MDS_2d','MDS_5d'}
+                dissim_matrix(dissim_matrix==0)=nan;
+                dissim_matrix(eye(size(dissim_matrix))==1)=0;
+                D=mdscale(dissim_matrix,2,'Criterion','metricstress','Start','random');
 
-    Dissim{n}=Dissim{n}/max(Dissim{n}(:));
-    D=mdscale(Dissim{n},2,'Criterion','metricstress');
-
-    D=Rotate_Same_Ref(D);
-    figure('Position', [0 0 1920 1080]);
-    for i=1:length(D)
-        plot(D(i,1),D(i,2),'o');
-        hold on
-    end
-    ax=gca;
-    xscale=get(ax,'xlim');
-    yscale=get(ax,'ylim');
-    xlim([-max(abs(xscale)) max(abs(xscale))]);
-    ylim([-max(abs(yscale)) max(abs(yscale))]);
-    grid on;
-    set(gca,'fontsize',20);
-    ax=gca;
-    AxesPos=get(ax,'position');
-    xscale=get(ax,'xlim');
-    yscale=get(ax,'ylim');
-
-    ImgSize=0.11;
-    for i=1:length(D)
-        Xnorm=((D(i,1)-xscale(1))/diff(xscale))*AxesPos(3)+AxesPos(1)-ImgSize/2;
-        Ynorm=((D(i,2)-yscale(1))/diff(yscale))*AxesPos(4)+AxesPos(2)-ImgSize/2;
-        ax2=axes('position',[Xnorm Ynorm ImgSize ImgSize]);
-        box on;
-        if(i>=10)
-            Image=imread(['faces' filesep 'Face' num2str(i) '.png']);
-        else
-            Image=imread(['faces' filesep 'Face0' num2str(i) '.png']);
+            case {'ML'}
+                D=mdscale(Dissim{n},2,'Criterion','metricstress','Start','random');
         end
-        imshow(Image(100:1330,481:1600,:));
-        axis off;
-    end
-    grid on
-    print(gcf,['2DVisualizationDissimilarityMatrix-' SubjIDs{n} '.png'],'-dpng','-r300');
-end
-close all;
 
+        D=Rotate_Same_Ref(D);
+        figure('Position', [0 0 1920 1080]);
+        for i=1:length(D)
+            plot(D(i,1),D(i,2),'o');
+            hold on
+        end
+        ax=gca;
+        xscale=get(ax,'xlim');
+        yscale=get(ax,'ylim');
+        xlim([-max(abs(xscale)) max(abs(xscale))]);
+        ylim([-max(abs(yscale)) max(abs(yscale))]);
+        grid on;
+        set(gca,'fontsize',20);
+        ax=gca;
+        AxesPos=get(ax,'position');
+        xscale=get(ax,'xlim');
+        yscale=get(ax,'ylim');
+
+        ImgSize=0.11;
+        for i=1:length(D)
+            Xnorm=((D(i,1)-xscale(1))/diff(xscale))*AxesPos(3)+AxesPos(1)-ImgSize/2;
+            Ynorm=((D(i,2)-yscale(1))/diff(yscale))*AxesPos(4)+AxesPos(2)-ImgSize/2;
+            ax2=axes('position',[Xnorm Ynorm ImgSize ImgSize]);
+            box on;
+            if(i>=10)
+                Image=imread(['faces' filesep 'Face' num2str(i) '.png']);
+            else
+                Image=imread(['faces' filesep 'Face0' num2str(i) '.png']);
+            end
+            imshow(Image(100:1330,481:1600,:));
+            axis off;
+        end
+        grid on
+        print(gcf,['2D Visualization Dissimilarity Matrix-' SubjIDs{n} '_' DissimCalculateApproach '.png'],'-dpng','-r300');
+        close all
+    end
+end
 
 
 
@@ -112,7 +163,7 @@ function DissimMatrix=MakeDissimFromClickLoggings(ClickData,clicksListIndex,NMat
         SimTracker{i}=[];
     end
     
-    %%%%% Read Tragets and Clicks %%%%%
+    %%%%% Read Targets and Clicks %%%%%
     Trials=table2array(ClickData(:,2));
     Clicks=table2array(ClickData(:,5))+1;
     Targets=table2array(ClickData(:,8))+1;

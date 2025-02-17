@@ -1,0 +1,6 @@
+﻿reversalDistances	1	321	81	681	521	641	241	321	281	321	301	341	241	341	321	341	281
+reversalIndices	3	5	6	10	11	13	22	24	25	27	28	31	41	48	49	51	57
+responseDistances	500	100	1	1	321	321	81	281	481	681	681	521	641	641	561	561	481	481	401	401	321	321	241	321	321	281	321	321	301	321	341	341	321	321	301	301	281	281	261	261	241	241	261	261	281	301	321	341	341	321	341	341	321	321	301	301	281	281	301	321
+responseValues	True	True	True	False	True	True	False	False	False	True	True	False	True	True	True	True	True	True	True	True	True	True	False	True	True	False	True	True	False	False	True	True	True	True	True	True	True	True	True	True	True	False	True	False	False	False	False	True	True	False	True	True	True	True	True	True	True	False	False	True
+responseMorphIDs	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	781	950	74	383	670	723	667	627	53	574	526	637	686	260	302	633	982	684	611	258	360	479	900	903	3	908	240	538	328	564
+candidateMorphs	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	[781, 440]	[950, 609]	[74, 395]	[383, 62]	[670, 971]	[723, 422]	[667, 948]	[627, 908]	[53, 314]	[574, 313]	[526, 285]	[637, 396]	[686, 947]	[260, 521]	[302, 21]	[633, 332]	[982, 661]	[684, 343]	[611, 270]	[258, 579]	[360, 701]	[479, 820]	[900, 579]	[903, 582]	[3, 304]	[908, 607]	[240, 521]	[538, 257]	[328, 27]	[564, 243]
