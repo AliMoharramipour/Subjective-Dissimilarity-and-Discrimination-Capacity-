@@ -80,7 +80,7 @@ This folder contains the MATLAB codes for visualizing and analyzing the data.
 
 **VisualizeTheSubjectiveSimilarityData**: This code prints the dissimilarity matrix (derived from the embeddings), and also visualizes it in a 2D-space by applying a 2D metric-MDS. The 2D space is rotated so that the first face (face01) is always located in x<0, y=0 coordinate. This code also displays the data quality check for each participant (i.e., the correlation between the dissimilarity matrix derived from the first-half and the second-half of trials).  
 
-**MainAnalysis**: This code applies all the analysis described in our paper and makes the plots shown in our pilot result figures.
+**MainAnalysis**: This code applies all the analysis described in our paper and makes the plots shown in our result figures.
 
 ## Prepare Faces and Morphs 
 We used the Basal Face Model (BFM) in our study to generate the faces. Our code is based off of the BFM model shared here https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads by Prof. Dr. T. Vetter. 
