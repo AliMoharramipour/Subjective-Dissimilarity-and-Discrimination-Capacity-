@@ -17,7 +17,7 @@ This is the repository for the paper **Is subjective perceptual similarity metac
      
          
 The **pilot** folder contains all the codes and materials used in our pilot study. 
-The **Main** folder contains all the codes and materials used in the main study. 
+The **Main** folder contains all the codes and materials used in our main study. 
 ## Near Threshold Discrimination Task
 The near-threshold discrimination task is an interleaved staircase task where subjects discriminate between morphs of selected face pairs. Each staircase represents one face pair with 1000 morphs between them. Each face is assigned an integer ID. For example, for the face pair `1-28`, `1-28.1` represents the first morph for this pair, which is the closest to face 1. Similarly, `1-28.1000` is the 1000th morph for this pair, which is the closet to face 28. In each iteration, the staircase shows three faces. It randomly chooses a morph *n*, and shows the morph with ID `n` twice. It also stores an integer distance *k*, also known as the intensity, to use for each iteration, and shows a morph which is *k* away from the face *n*, i.e. `n±k`, once. Whether the applied intensity is positive or negative is chosen at random. The range from which *n* is randomly chosen is constrained such that `n±k` will always be between 1 and 1000. The intensity is controlled by a set of rules passed to `StairHandlerGetIntensity`, which in this experiment specifies a 2-down/1-up staircase with decreasing step sizes upon reversals. 
 
