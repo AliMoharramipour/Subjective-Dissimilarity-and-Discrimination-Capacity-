@@ -22,6 +22,12 @@ from logger.log_writer import LogWriter
 from selector_type import SelectorType
 from util import matrix_utils
 
+#####################################
+## "must_have_allcomp = 1" inside selection_algorithm -->
+## continue beyond the intended number of iterations/trials to ensure that all possible trio comparisons are
+# included at least once among the trials (i.e., no zero cell in dissim_matrix_orig).
+## This mode was disabled in our experiment.
+## If exceeding the intended number of trials is not a concern and there are not a large number of stimuli, it would be good to enable this.
 
 
 def generate_initial_constraints_from_oracle_result(oracle_sorted_tuples: List[tuple]) -> List[tuple]:
@@ -295,6 +301,7 @@ class SelectionAlgorithm:
 
             prev_dissim_matrix = deepcopy(dissim_matrix)
             dissim_matrix = self.generate_dissimilarity_matrix(sim_tracker)
+            dissim_matrix_orig = dissim_matrix.copy()
 
             body_selector_iter_time = time.time() - iter_start_time
             print(f"Total time for body selector this iteration was {body_selector_iter_time}")
@@ -326,74 +333,95 @@ class SelectionAlgorithm:
             if run_data["change_sim_matrix"] < 0:
                 break
 
-        """
-        1. Find the zeros in the sim matrix (x,y)
-        Run two trials - one where x is target, y is candidate, another where y is target and x is candidate
-        The rest of the faces come from the body selector.
-        Mix the remaining trials. Do all x,y first, then do all y,x.
-        """
-        # Fill out the zeroes in the matrix
-        remaining_pairs = []
+        ################
+        must_have_allcomp = 0
+        ################
+        if must_have_allcomp == 1:
+            """
+            1. Find the zeros in the sim matrix (x,y)
+            Run two trials - one where x is target, y is candidate, another where y is target and x is candidate
+            The rest of the faces come from the body selector.
+            Mix the remaining trials. Do all x,y first, then do all y,x.
+            """
+            i += 1  # treat the zero filling as one "iteration"
+            remaining_pairs = []
+            for x in range(len(dissim_matrix_orig)):
+                for y in range(len(dissim_matrix_orig[0])):
+                    if x == y:
+                        continue
+                    if dissim_matrix_orig[x][y] == 0:
+                        # this will also append (y, x) which is what we want
+                        remaining_pairs.append((x, y))
+            np.random.shuffle(remaining_pairs)
+            while len(remaining_pairs) != 0:
+                face_pair = remaining_pairs[0]
+                target_face_num = face_pair[0]
+                selected_tuple, tuple_qualities = body_selector.run_body_selector_with_previous_selections(
+                    M_prime, target_face_num, body_selector_data_list, fixed_candidates=[face_pair[1]])
 
-        i += 1  # treat the zero filling as one "iteration"
-        for x in range(len(dissim_matrix)):
-            for y in range(len(dissim_matrix[0])):
-                if x == y:
-                    continue
-                if dissim_matrix[x][y] == 0:
-                    # this will also append (y, x) which is what we want
-                    remaining_pairs.append((x, y))
-        for face_pair in remaining_pairs:
-            target_face_num = face_pair[0]
-            selected_tuple, tuple_qualities = body_selector.run_body_selector_with_previous_selections(
-                M_prime, target_face_num, body_selector_data_list, fixed_candidates=[face_pair[1]])
+                oracle_result = self.oracle(selected_tuple, True)
 
-            oracle_result = self.oracle(selected_tuple, True)
+                if oracle_result.timed_out:
+                    remaining_pairs.append(target_face_num)
 
-            if oracle_result.timed_out:
-                remaining_pairs.append(target_face_num)
+                    click_datas = oracle_result.click_data
+                    for click_data in click_datas:
+                        click_data["iteration"] = i
+                    click_data_list.extend(click_datas)
+                else:
+                    oracle_sorted_tuple = oracle_result.response_tuple
+                    sim_tracker.add_oracle_result(oracle_sorted_tuple)
 
-                click_datas = oracle_result.click_data
-                for click_data in click_datas:
-                    click_data["iteration"] = i
-                click_data_list.extend(click_datas)
-            else:
-                oracle_sorted_tuple = oracle_result.response_tuple
-                sim_tracker.add_oracle_result(oracle_sorted_tuple)
+                    click_datas = oracle_result.click_data
+                    for click_data in click_datas:
+                        click_data["iteration"] = i
+                    click_data_list.extend(click_datas)
 
-                click_datas = oracle_result.click_data
-                for click_data in click_datas:
-                    click_data["iteration"] = i
-                click_data_list.extend(click_datas)
+                    if self.verbose:
+                        selections.append(selected_tuple)
+                        selection_qualities.append(tuple_qualities)
 
-                if self.verbose:
-                    selections.append(selected_tuple)
-                    selection_qualities.append(tuple_qualities)
+                dissim_matrix_orig = self.generate_dissimilarity_matrix(sim_tracker)
+                remaining_pairs = []
+                for x in range(len(dissim_matrix_orig)):
+                    for y in range(len(dissim_matrix_orig[0])):
+                        if x == y:
+                            continue
+                        if dissim_matrix_orig[x][y] == 0:
+                            # this will also append (y, x) which is what we want
+                            remaining_pairs.append((x, y))
+                np.random.shuffle(remaining_pairs)
 
-        # print(f"Total time for body selector this iteration was {body_selector_iter_time}")
+            prev_dissim_matrix = deepcopy(dissim_matrix)
+            dissim_matrix = self.generate_dissimilarity_matrix(sim_tracker)
+            dissim_matrix_orig = dissim_matrix.copy()
 
-        prev_dissim_matrix = deepcopy(dissim_matrix)
-        dissim_matrix = self.generate_dissimilarity_matrix(sim_tracker)
+            print(f"Starting MDS...")
+            MDS_start_time = time.time()
+            M_prime_init = initial_mds.fit_transform(dissim_matrix)
+            dissim_matrix_filled = matrix_utils.get_output_matrix_from_embedding(M_prime_init, len(dissim_matrix))
+            dissim_matrix_filled = dissim_matrix_filled / np.max(dissim_matrix_filled)
+            for n in range(len(dissim_matrix)):
+                for m in range(len(dissim_matrix)):
+                    if (dissim_matrix[n, m] == 0):
+                        dissim_matrix[n, m] = dissim_matrix_filled[n, m]
+            M_prime = run_mds.fit_transform(dissim_matrix, M_prime)
+            print(f"MDS done, time taken = {time.time() - MDS_start_time}")
 
-        print(f"Starting MDS...")
-        MDS_start_time = time.time()
-        M_prime = run_mds.fit_transform(dissim_matrix, M_prime)
-        print(f"MDS done, time taken = {time.time() - MDS_start_time}")
-
-        run_data["iteration"] = i
-        if target_matrix is not None:
-            run_data["correlation_embedding"] = matrix_utils.correlation(
-                matrix_utils.get_output_matrix_from_embedding(M_prime, len(M_prime)),
-                target_matrix)[0][1]
-            run_data["correlation_sim_matrix"] = matrix_utils.correlation(dissim_matrix, target_matrix)[0][1]
-        run_data["change_sim_matrix"] = la.norm(dissim_matrix.flatten() - prev_dissim_matrix.flatten())
-        run_data_list.append(deepcopy(run_data))
+            run_data["iteration"] = i
+            if target_matrix is not None:
+                run_data["correlation_embedding"] = matrix_utils.correlation(
+                    matrix_utils.get_output_matrix_from_embedding(M_prime, len(M_prime)),
+                    target_matrix)[0][1]
+                run_data["correlation_sim_matrix"] = matrix_utils.correlation(dissim_matrix, target_matrix)[0][1]
+            run_data["change_sim_matrix"] = la.norm(dissim_matrix.flatten() - prev_dissim_matrix.flatten())
+            run_data_list.append(deepcopy(run_data))
 
         if self.verbose:
             Ms.append(M_prime)
             return Ms, (initial_constraints, selections), selection_qualities
 
-        return M_prime, dissim_matrix
+        return M_prime, dissim_matrix_orig
 
     def selection_algorithm_random(self, run_data_list: list, run_data: dict, click_data_list: list,
                                    n_components=5, n_init=100, max_iter=400, target_matrix=None, seed=None):

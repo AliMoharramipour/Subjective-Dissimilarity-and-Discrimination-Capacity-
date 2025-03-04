@@ -71,7 +71,7 @@ def main():
     n_burn_ins = 1
     n_components = 5
     tuple_size = 5
-    num_iterations = 9
+    num_iterations = 10
 
     stim_list = create_stimulus_images(get_img_paths(), win)
     image_similarity_matrix = create_image_similarity_matrix(len(stim_list))  # numImages == (len(stim_list)^2)/2
