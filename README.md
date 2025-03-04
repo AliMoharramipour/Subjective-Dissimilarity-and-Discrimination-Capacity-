@@ -80,7 +80,7 @@ This folder contains the data collected from the “subjective similarity judgme
 
 **MachineLearningApproach**: The python code that uses a machine-learning approach to estimate the dissimilarity matrix form the ranking data (reading the `click_data.csv` as the input). We described this approach in detail in our paper. 
 
-**PairSelectionForDiscriminationTask**: Selecting pairs for the near-threshold discrimination task, as described in our paper
+**PairSelectionForDiscriminationTask**: Selecting pairs for the near-threshold discrimination task, as described in our paper.
 
 **MainAnalysis**: This code applies all the analysis described in our paper and makes the plots shown in our paper.
 
