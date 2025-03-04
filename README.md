@@ -16,8 +16,8 @@ This is the repository for the paper **Is subjective perceptual similarity metac
 
      
          
-The **pilot** folder contains all the codes and materials used in running our pilot study (N = 4 participants), all the data collected, and the analysis code ran on the data. 
-The **Main** folder contains all the codes and materials that will be used in the main study. 
+The **pilot** folder contains all the codes and materials used in our pilot study. 
+The **Main** folder contains all the codes and materials used in our main study. 
 ## Near Threshold Discrimination Task
 The near-threshold discrimination task is an interleaved staircase task where subjects discriminate between morphs of selected face pairs. Each staircase represents one face pair with 1000 morphs between them. Each face is assigned an integer ID. For example, for the face pair `1-28`, `1-28.1` represents the first morph for this pair, which is the closest to face 1. Similarly, `1-28.1000` is the 1000th morph for this pair, which is the closet to face 28. In each iteration, the staircase shows three faces. It randomly chooses a morph *n*, and shows the morph with ID `n` twice. It also stores an integer distance *k*, also known as the intensity, to use for each iteration, and shows a morph which is *k* away from the face *n*, i.e. `n±k`, once. Whether the applied intensity is positive or negative is chosen at random. The range from which *n* is randomly chosen is constrained such that `n±k` will always be between 1 and 1000. The intensity is controlled by a set of rules passed to `StairHandlerGetIntensity`, which in this experiment specifies a 2-down/1-up staircase with decreasing step sizes upon reversals. 
 
@@ -48,7 +48,7 @@ The subject's dissimilarity space is represented by a 5-dimensional embedding, w
 	2. Generate a new dissimilarity matrix based on all the ranking data collected up to this point.
 	3. Run metric MDS `fit_transform` on the new dissimilarity matrix, using the embedding output of the previous MDS as the seed. We fill in the missing cells, similar to (2), prior to running the metric MDS (*Note: In the pilot, we ran the metric MDS without filling in the missing cells; The value of the missing cells was set to zero)
 4. Repeat (3) for `num_iterations` 
-5. Find all remaining face pairs in the dissimilarity matrix which have no data associated with them, and run backfill trials to fill in missing data using the process described in (3). (*We didn't have this step in the Pilot)
+5. (optional) Find all remaining face pairs in the dissimilarity matrix which have no data associated with them, and run backfill trials to fill in missing data using the process described in (3). (*We didn't have this step in the study)
 6. Save the dissimilarity matrix and the embeddings from the experiment for later use.
 
 ### Dissimilarity matrix formula
@@ -76,11 +76,11 @@ This folder contains the data collected from the “subjective similarity judgme
 ## Analysis code 
 This folder contains the MATLAB codes for visualizing and analyzing the data.
 
-**VisualizeTheStaircasesInTheDiscriminationTask.m**: This code visualizes all the interleaved staircases ran on a subject, in a single plot with subplots showcasing each pair’s staircase. Also, it prints the data quality check for each participant (i.e., the number of staircases with less than 3 downs in their last 20 trials). 
+**VisualizeTheStaircasesInTheDiscriminationTask.m**: This code visualizes all the interleaved staircases ran on a subject, in a plot with subplots showcasing each pair’s staircase. Also, it prints the data quality check for each participant (i.e., the number of staircases with less than 3 downs in their last 20 trials). 
 
-**VisualizeTheSubjectiveSimilarityData**: This code prints the dissimilarity matrix (derived from the embeddings), and also visualizes it in a 2D-space by applying a 2D metric-MDS. The 2D space is rotated so that the first face (face01) is always located in x<0, y=0 coordinate. This code also displays the data quality check for each participant (i.e., the correlation between the dissimilarity matrix derived from the first-half and the second-half of trials).  
+**VisualizeTheSubjectiveSimilarityData**: This code prints the dissimilarity matrix, and also visualizes it in a 2D-space by applying a 2D metric-MDS. The 2D space is rotated so that the first face (face01) is always located in x<0, y=0 coordinate. This code also displays the data quality check for each participant (i.e., the correlation between the dissimilarity matrix derived from the first-half and the second-half of trials in a session).  
 
-**MainAnalysis**: This code applies all the analysis described in our paper and makes the plots shown in our pilot result figures.
+**MainAnalysis**: This code applies all the analysis described in our paper and makes the plots shown in our paper.
 
 ## Prepare Faces and Morphs 
 We used the Basal Face Model (BFM) in our study to generate the faces. Our code is based off of the BFM model shared here https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads by Prof. Dr. T. Vetter. 
