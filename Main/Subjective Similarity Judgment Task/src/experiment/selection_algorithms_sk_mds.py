@@ -398,13 +398,6 @@ class SelectionAlgorithm:
 
             print(f"Starting MDS...")
             MDS_start_time = time.time()
-            M_prime_init = initial_mds.fit_transform(dissim_matrix)
-            dissim_matrix_filled = matrix_utils.get_output_matrix_from_embedding(M_prime_init, len(dissim_matrix))
-            dissim_matrix_filled = dissim_matrix_filled / np.max(dissim_matrix_filled)
-            for n in range(len(dissim_matrix)):
-                for m in range(len(dissim_matrix)):
-                    if (dissim_matrix[n, m] == 0):
-                        dissim_matrix[n, m] = dissim_matrix_filled[n, m]
             M_prime = run_mds.fit_transform(dissim_matrix, M_prime)
             print(f"MDS done, time taken = {time.time() - MDS_start_time}")
 
