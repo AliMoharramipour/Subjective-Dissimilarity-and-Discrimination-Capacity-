@@ -73,11 +73,14 @@ This experiment runs on PsychoPy 2023, using Python version 3.8.
 This folder contains the data collected from the “subjective similarity judgment task" and the “near-threshold discrimination task”
 
 ## Analysis code 
-This folder contains the MATLAB codes for visualizing and analyzing the data.
 
 **VisualizeTheStaircasesInTheDiscriminationTask.m**: This code visualizes all the interleaved staircases ran on a subject, in a plot with subplots showcasing each pair’s staircase. Also, it prints the data quality check for each participant (i.e., the number of staircases with less than 3 downs in their last 20 trials). 
 
 **VisualizeTheSubjectiveSimilarityData**: This code prints the dissimilarity matrix, and also visualizes it in a 2D-space by applying a 2D metric-MDS. The 2D space is rotated so that the first face (face01) is always located in x<0, y=0 coordinate. This code also displays the data quality check for each participant (i.e., the correlation between the dissimilarity matrix derived from the first-half and the second-half of trials in a session).  
+
+**MachineLearningApproach**: The python code that uses a machine-learning approach to estimate the dissimilarity matrix form the ranking data (reading the `click_data.csv` as the input). We described this approach in detail in our paper. 
+
+**PairSelectionForDiscriminationTask**: Selecting pairs for the near-threshold discrimination task, as described in our paper
 
 **MainAnalysis**: This code applies all the analysis described in our paper and makes the plots shown in our paper.
 
