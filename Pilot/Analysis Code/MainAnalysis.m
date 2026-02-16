@@ -146,22 +146,18 @@ for i=1:length(SubjIDs)
     ZvaluesPermutationTest(i)=(CorrOwn(i)-mean(CorrPermSorted))/std(CorrPermSorted);
 end
 
-%%%%%% Visualization %%%%%%%%%%%
+%% %%%% Visualization %%%%%%%%%%%
 Color_List=[0 0 1;1 0 0;0 1 0];
 figure('Position', [0 0 1080 1080]);
 hold on
 for i=1:size(Rvalues,1)
-    for j=1:size(Rvalues,2)
+    for j=1:size(Rvalues,1)
         switch j
             case 1
                 ColorChoose=Color_List(1,:);
                 RLoc=i+0.3*rand(1)-0.15;
                 plot(RLoc,Rvalues(i,j),'s','LineWidth',18,'Color',ColorChoose);
 
-            case size(Rvalues,1)+1
-                ColorChoose=Color_List(3,:);
-                plot(i+0.2*rand(1)-0.1,Rvalues(i,j),'d','LineWidth',15,'Color',ColorChoose);
-                
             otherwise
                 ColorChoose=Color_List(2,:);
                 plot(i+0.3*rand(1)-0.15,Rvalues(i,j),'o','LineWidth',12,'Color',ColorChoose);
@@ -181,7 +177,7 @@ for i=1:size(Rvalues,1)
 end
 print(gcf,'Between-Subjects_Correlations','-dpng','-r300');
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Group-Stats %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%% Group-Stats %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%% Hypothesis 1 %%%%%%%%%%%%
 %%%Bootstraping to find the confidence interval%%%%%%
 %%%%%%%%

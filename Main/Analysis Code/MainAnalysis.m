@@ -189,8 +189,6 @@ end
 %%%% examined face pairs indexes %%%%
 Indexes=sub2ind(size(Dissim{1}),JND_Pairs(:,1),JND_Pairs(:,2));
 
-
-
 %%%%%%%%******************************* Compare ML and MDS_5d ************************************%%%%%%%%%
 figure('Position', [200 200 900 700]);
 [p,h,stats]=signrank(WithinSubjsCorrMLVsMDS(:,1),WithinSubjsCorrMLVsMDS(:,2));
@@ -209,9 +207,6 @@ title({'Comparison of ML and MDS approaches', 'in obtaining dissimilarity matrix
 ylabel('Within-subject correlation');
 set(gca,'fontsize',14);
 print(gcf,'Within-subject correlations ML Vs MDS-5d.png','-dpng','-r300');
-
-
-
 
 %%%%%%*************************** Dissimilarity matrix subject specificity **************************%%%%%%%%
 %%%%% Between Vs Within Subjects Correlation %%%%%
@@ -273,8 +268,6 @@ end
 grid on
 print(gcf,['Between- vs within-subject correlation' '_' DissimCalculateApproach '.png'],'-dpng','-r300');
 
-
-
 %%%%%%***************************** Show staricase quality check ****************************%%%%%%%%%
 figure('Position', [0 0 1920 1080]);
 k=1;
@@ -304,8 +297,6 @@ for n=Indexes'
 end
 print(gcf,'Reversal ratios in each face pair staircase.png','-dpng','-r300');
 
-
-
 %%%%%%*************************** correlation between dissimilarity value and #JNDs in each subject ***************************%%%%%%%%
 figure('Position', [0 0 1920 1080]);
 JND_Dissim_Corr=[];
@@ -334,8 +325,6 @@ for i=1:length(SubjIDs)
 end
 print(gcf,'Dissim and #JND correlation.png','-dpng','-r300');
 
-
-
 %%%%***************************  correlation between ones dissimilarity value and others' #JNDs ***************************%%%%%%%%
 Rvalues=[];
 Pvalues=[];
@@ -358,8 +347,6 @@ for i=1:length(SubjIDs)
     %%%% Corr with group average %%%%
     [Rvalues(i,k),Pvalues(i,k)]=corr(Z_JNDs,Dissim{i}(Indexes),'Type',CorrType);
 end
-
-
 
 %%%%%%%%%%******************************* Permutation Test *******************************%%%%%%%%%%%
 %%%%%******%%%%%%%
@@ -408,7 +395,7 @@ Color_List=[0 0 1;1 0 0;0 1 0];
 figure('Position', [0 0 1300 1080]);
 hold on
 for i=1:size(Rvalues,1)
-    for j=1:size(Rvalues,2)
+    for j=1:size(Rvalues,1)
         switch j
             case 1
                 %%%% Corr with own #JNDs %%%%%
@@ -416,11 +403,6 @@ for i=1:size(Rvalues,1)
                 RLoc=i+0.3*rand(1)-0.15;
                 plot(RLoc,Rvalues(i,j),'s','LineWidth',13,'Color',ColorChoose);
 
-            case size(Rvalues,1)+1
-                %%%% Corr with group-averaged #JNDs %%%%%
-                ColorChoose=Color_List(3,:);
-                plot(i+0.2*rand(1)-0.1,Rvalues(i,j),'d','LineWidth',8,'Color',ColorChoose);
-                
             otherwise
                 %%%% Corr with others #JNDs %%%%%
                 ColorChoose=Color_List(2,:);
@@ -440,8 +422,6 @@ for i=1:size(Rvalues,1)
     text(i-0.125,Ylim(2)+Ylim(2)/20,['p:' num2str(PvaluesPermutationTest(i),'%0.5f')],'Color',[0 0 1],'FontSize',10);
 end
 print(gcf,'Individual specificity of the correlations between dissim  and #JNDs','-dpng','-r300');
-
-
 
 %%%%%********************************************* Group-level statistics ***********************************************%%%%%
 %%%%%%%%%%%% Hypothesis 1 %%%%%%%%%%%%
@@ -508,8 +488,6 @@ text(Xlim(1)+0.05,Ylim(2)-0.1,['95% CI:[' num2str(ConfidenceInterval2(1)) ', ' n
 text(Xlim(1)+0.05,Ylim(2)-0.3,['t-test ' '; BF:' num2str(BF2_0) ', Pval:' num2str(p_value2_0)],'FontSize',12);
 text(Xlim(1)+0.05,Ylim(2)-0.5,['Fisher''s p-value: ' num2str(FishersP2)],'FontSize',12);
 print(gcf,'Group-level statistics.png','-dpng','-r300');
-
-
 
 %%%%%%%***************** relationship between dissimilarity value and #JNDs in each face pair across subjects *******************%%%%%%%%%%%
 %%%%% z_score %%%%%
