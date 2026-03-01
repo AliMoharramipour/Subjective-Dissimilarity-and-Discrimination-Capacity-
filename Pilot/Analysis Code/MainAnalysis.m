@@ -74,6 +74,12 @@ for i=1:length(SubjIDs)
     plot(JNDs{i}(Indexes),Dissim{i}(Indexes),'o','lineWidth',4,'Color',[0 0.6 0.8]);
     grid on;
     [WithinCorr(i),WithinCorrPval(i)]=corr(JNDs{i}(Indexes),Dissim{i}(Indexes),'Type',CorrType);
+     % make it one-tailed %
+    if(WithinCorr(i)>0)
+        WithinCorrPval(i)=WithinCorrPval(i)/2;
+    else
+        WithinCorrPval(i)=1-WithinCorrPval(i)/2;
+    end
     %%%%% Z-value estimation %%%%%
     Fr=0.5*log((1+WithinCorr(i))/(1-WithinCorr(i)));
     WithinCorrZval(i)=sqrt((length(Indexes)-3)/1.06)*Fr;
@@ -146,7 +152,7 @@ for i=1:length(SubjIDs)
     ZvaluesPermutationTest(i)=(CorrOwn(i)-mean(CorrPermSorted))/std(CorrPermSorted);
 end
 
-%% %%%% Visualization %%%%%%%%%%%
+%%%%%% Visualization %%%%%%%%%%%
 Color_List=[0 0 1;1 0 0;0 1 0];
 figure('Position', [0 0 1080 1080]);
 hold on
@@ -177,7 +183,7 @@ for i=1:size(Rvalues,1)
 end
 print(gcf,'Between-Subjects_Correlations','-dpng','-r300');
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%% Group-Stats %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Group-Stats %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%% Hypothesis 1 %%%%%%%%%%%%
 %%%Bootstraping to find the confidence interval%%%%%%
 %%%%%%%%
@@ -188,6 +194,12 @@ Z_mean_distribution=sort(mean(WithinCorrZval(Bootstrap_Indices),2));
 ConfidenceInterval1=[Z_mean_distribution(round(0.025*NBootstrap)) Z_mean_distribution(round(0.975*NBootstrap))];
 %%% T-test: BF, p-value %%%
 [BF1_0,p_value1_0]=bf.ttest(WithinCorrZval,0*ones(1,length(WithinCorrZval)));
+% make it one-tailed %
+if(mean(WithinCorrZval)>=0)
+    BF1_0=BF1_0*2; p_value1_0=p_value1_0/2;
+else
+    BF1_0=BF1_0*0.5; p_value1_0=1-p_value1_0/2;
+end
 %%% Fisher's test %%%
 X2=-2*sum(log(WithinCorrPval));
 FishersP1=1-chi2cdf(X2,2*length(WithinCorrPval));
@@ -201,6 +213,12 @@ Z_mean_distribution2=sort(mean(ZvaluesPermutationTest(Bootstrap_Indices),2));
 ConfidenceInterval2=[Z_mean_distribution2(round(0.025*NBootstrap)) Z_mean_distribution2(round(0.975*NBootstrap))];
 %%% T-test: BF, p-value %%%
 [BF2_0,p_value2_0]=bf.ttest(ZvaluesPermutationTest,0*ones(1,length(ZvaluesPermutationTest)));
+% make it one-tailed %
+if(mean(ZvaluesPermutationTest)>=0)
+    BF2_0=BF2_0*2; p_value2_0=p_value2_0/2;
+else
+    BF2_0=BF2_0*0.5; p_value2_0=1-p_value2_0/2;
+end
 %%% Fisher's test %%%
 X2=-2*sum(log(PvaluesPermutationTest));
 FishersP2=1-chi2cdf(X2,2*length(PvaluesPermutationTest));

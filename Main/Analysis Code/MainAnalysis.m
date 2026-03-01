@@ -3,11 +3,12 @@ clear;
 rng("default")
 
 %%%%%%%%%%**************** Choose dissimilarity matrix calculation approach **************%%%%%%%%%%%
-DissimCalculateApproach='ML'; %%% 'ML','MDS_5d','MDS_2d'
+DissimCalculateApproach='MDS_5d'; %%% 'ML','MDS_5d','MDS_2d'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Add BayesFactor Matlab Package %%%
 addpath(genpath([pwd filesep 'BayesFactor Matlab Package']));
+addpath(genpath([pwd filesep 'bayesian-prevalence-master']));
 installBayesFactor
 
 CurrentAddress=pwd;
@@ -191,7 +192,7 @@ Indexes=sub2ind(size(Dissim{1}),JND_Pairs(:,1),JND_Pairs(:,2));
 
 %%%%%%%%******************************* Compare ML and MDS_5d ************************************%%%%%%%%%
 figure('Position', [200 200 900 700]);
-[p,h,stats]=signrank(WithinSubjsCorrMLVsMDS(:,1),WithinSubjsCorrMLVsMDS(:,2));
+[p,~,stats]=signrank(WithinSubjsCorrMLVsMDS(:,1),WithinSubjsCorrMLVsMDS(:,2));
 bar(mean(WithinSubjsCorrMLVsMDS),'FaceColor',[0.5 0.5 0.5],'EdgeColor',[0.3 0.3 0.3],'LineWidth',1.5);
 hold on;
 for i=1:size(WithinSubjsCorrMLVsMDS,1)
@@ -271,6 +272,7 @@ print(gcf,['Between- vs within-subject correlation' '_' DissimCalculateApproach 
 %%%%%%***************************** Show staricase quality check ****************************%%%%%%%%%
 figure('Position', [0 0 1920 1080]);
 k=1;
+ali=[];
 for n=Indexes'
     subplot(4,6,k);
     ReversalRatiosAcrossSubjects=[];
@@ -294,6 +296,7 @@ for n=Indexes'
         plot(1+0.3*(1-2*rand(1)),ReversalRatiosAcrossSubjects(i),'o','LineWidth',2,'MarkerSize',5,'Color',[0.2 0.2 0.2]);
     end
     k=k+1;
+    ali=[ali;ReversalRatiosAcrossSubjects];
 end
 print(gcf,'Reversal ratios in each face pair staircase.png','-dpng','-r300');
 
@@ -307,6 +310,12 @@ for i=1:length(SubjIDs)
     plot(JNDs{i}(Indexes),Dissim{i}(Indexes),'o','lineWidth',4,'Color',[0 0.6 0.8]);
     grid on;
     [JND_Dissim_Corr(i),JND_Dissim_Corr_Pval(i)]=corr(JNDs{i}(Indexes),Dissim{i}(Indexes),'Type',CorrType);
+    % make it one-tailed %
+    if(JND_Dissim_Corr(i)>0)
+        JND_Dissim_Corr_Pval(i)=JND_Dissim_Corr_Pval(i)/2;
+    else
+        JND_Dissim_Corr_Pval(i)=1-JND_Dissim_Corr_Pval(i)/2;
+    end
     %%%%% z-value computation %%%%%
     Fr=0.5*log((1+JND_Dissim_Corr(i))/(1-JND_Dissim_Corr(i)));
     JND_Dissim_Corr_Zval(i)=sqrt((length(Indexes)-3)/1.06)*Fr;
@@ -434,6 +443,12 @@ Z_mean_distribution=sort(mean(JND_Dissim_Corr_Zval(Bootstrap_Indices),2));
 ConfidenceInterval1=[Z_mean_distribution(round(0.025*NBootstrap)) Z_mean_distribution(round(0.975*NBootstrap))];
 %%% T-test: BF, p-value %%%
 [BF1_0,p_value1_0]=bf.ttest(JND_Dissim_Corr_Zval,0*ones(1,length(JND_Dissim_Corr_Zval)));
+% make it one-tailed %
+if(mean(JND_Dissim_Corr_Zval)>=0)
+    BF1_0=BF1_0*2; p_value1_0=p_value1_0/2;
+else
+    BF1_0=BF1_0*0.5; p_value1_0=1-p_value1_0/2;
+end
 %%% Fisher's test %%%
 X2=-2*sum(log(JND_Dissim_Corr_Pval));
 FishersP1=1-chi2cdf(X2,2*length(JND_Dissim_Corr_Pval));
@@ -447,6 +462,12 @@ Z_mean_distribution2=sort(mean(ZvaluesPermutationTest(Bootstrap_Indices),2));
 ConfidenceInterval2=[Z_mean_distribution2(round(0.025*NBootstrap)) Z_mean_distribution2(round(0.975*NBootstrap))];
 %%% T-test: BF, p-value %%%
 [BF2_0,p_value2_0]=bf.ttest(ZvaluesPermutationTest,0*ones(1,length(ZvaluesPermutationTest)));
+% make it one-tailed %
+if(mean(ZvaluesPermutationTest)>=0)
+    BF2_0=BF2_0*2; p_value2_0=p_value2_0/2;
+else
+    BF2_0=BF2_0*0.5; p_value2_0=1-p_value2_0/2;
+end
 %%% Fisher's test %%%
 X2=-2*sum(log(PvaluesPermutationTest));
 FishersP2=1-chi2cdf(X2,2*length(PvaluesPermutationTest));
@@ -531,6 +552,12 @@ for i=ShowOrder
     plot((Xlim(1)-1):0.01:(Xlim(2)+1),c(1)*((Xlim(1)-1):0.01:(Xlim(2)+1))+c(2),'--','Color',[0 0.6 0.8],'LineWidth',2.5)
     xlim([Xlim(1)-0.2 Xlim(2)+0.2]);
     [CorrPairs(i),PValPairs(i)]=corr(z_JNDPairs{i}',z_DissimPairs{i}','Type',CorrType);
+    % make one tail %
+    if(CorrPairs(i)>0)
+        PValPairs(i)=PValPairs(i)/2;
+    else
+        PValPairs(i)=1-PValPairs(i)/2;
+    end
     xlabel('#JNDs(z-normalized)');
     ylabel('Dissimilarity value(z-normalized)');
     
@@ -546,11 +573,15 @@ for i=ShowOrder
 end
 print(gcf,'Correlation between dissim and #JNDs in each face pair.png','-dpng','-r300');
 [BF3,p_value3]=bf.ttest(CorrPairs,0*ones(1,length(CorrPairs)));
+if(mean(CorrPairs)>=0)
+    BF3=BF3*2; p_value3=p_value3/2;
+else
+    BF3=BF3*0.5; p_value3=1-p_value3/2;
+end
 
 close all;
 
 %%%%%******************** Bayesian Prevalence ************************%%%%%%
-addpath([pwd filesep 'bayesian-prevalence-master\matlab']);
 alpha=0.05; % this specifies the alpha value used for the within-unit tests
 Ntests=12; % number of participants
 Nsigtests=5;% number of significant at the individual-level
