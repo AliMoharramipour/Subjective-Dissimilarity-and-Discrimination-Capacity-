@@ -1,6 +1,6 @@
 # Subjective-Dissimilarity-and-Discrimination-Capacity 
  
-This is the repository for the paper **Is subjective perceptual similarity metacognitive?** It is broken down into several directories, listed below. Each section will be described in more detail.
+This is the repository for the paper **Perceptual similarity judgments reflect one’s own discrimination capacities** It is broken down into several directories, listed below. Each section will be described in more detail.
     
    
   
