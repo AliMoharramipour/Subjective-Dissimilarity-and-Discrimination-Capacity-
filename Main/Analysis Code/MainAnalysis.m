@@ -3,7 +3,7 @@ clear;
 rng("default")
 
 %%%%%%%%%%**************** Choose dissimilarity matrix calculation approach **************%%%%%%%%%%%
-DissimCalculateApproach='MDS_5d'; %%% 'ML','MDS_5d','MDS_2d'
+DissimCalculateApproach='ML'; %%% 'ML','MDS_5d','MDS_2d'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Add BayesFactor Matlab Package %%%
@@ -209,6 +209,74 @@ ylabel('Within-subject correlation');
 set(gca,'fontsize',14);
 print(gcf,'Within-subject correlations ML Vs MDS-5d.png','-dpng','-r300');
 
+%%%%%%%************ Remove group-average and retain subject specific ************%%%%%
+Individual_residual_use=0;
+if(Individual_residual_use)
+    Dissim_res=[];
+    Dissim_res_each_sess=[];
+    JNDs_res=[];
+    for i=1:length(Dissim)
+
+        %%%%%% for dissim matrix %%%%%
+        D_avg=0;
+        for j=1:length(Dissim)
+            D_avg=D_avg+(Dissim{j}-mean(Dissim{j}(PickUpperTriangle)))/std(Dissim{j}(PickUpperTriangle));
+        end
+        D_avg=D_avg/length(Dissim);
+
+        Y=Dissim{i}(PickUpperTriangle);
+        X=D_avg(PickUpperTriangle);
+
+        b=[ones(size(X)),X]\Y;
+        Y_res=Y-[ones(size(X)),X]*b;
+
+        Dissim_res{i}=zeros(size(Dissim{i}));
+        Dissim_res{i}(PickUpperTriangle)=Y_res;
+        Dissim_res{i}=Dissim_res{i}+Dissim_res{i}';
+
+        %%% for each session %%%
+        for n=1:2
+            D_avg=0;
+            for j=1:length(Dissim)
+                D_avg=D_avg+(Dissim_in_each_sess{Reps(j,n)}-mean(Dissim_in_each_sess{Reps(j,n)}(PickUpperTriangle)))/std(Dissim_in_each_sess{Reps(j,n)}(PickUpperTriangle));
+            end
+            D_avg=D_avg/length(Dissim);
+
+            Y=Dissim_in_each_sess{Reps(i,n)}(PickUpperTriangle);
+            X=D_avg(PickUpperTriangle);
+
+            b=[ones(size(X)),X]\Y;
+            Y_res=Y-[ones(size(X)),X]*b;
+
+            Dissim_res_each_sess{Reps(i,n)}=zeros(size(Dissim_in_each_sess{Reps(i,n)}));
+            Dissim_res_each_sess{Reps(i,n)}(PickUpperTriangle)=Y_res;
+            Dissim_res_each_sess{Reps(i,n)}=Dissim_res_each_sess{Reps(i,n)}+Dissim_res_each_sess{Reps(i,n)}';
+        end
+
+
+        %%%%%% for JND %%%%%
+        D_avg=0;
+        for j=1:length(JNDs)
+            D_avg=D_avg+(JNDs{j}(Indexes)-mean(JNDs{j}(Indexes)))/std(JNDs{j}(Indexes));
+        end
+        D_avg=D_avg/length(JNDs);
+
+        Y=JNDs{i}(Indexes);
+        X=D_avg;
+
+        b=[ones(size(X)),X]\Y;
+        Y_res=Y-[ones(size(X)),X]*b;
+
+        JNDs_res{i}=zeros(size(JNDs{i}));
+        JNDs_res{i}(Indexes)=Y_res;
+
+    end
+    Dissim=Dissim_res;
+    Dissim_in_each_sess=Dissim_res_each_sess;
+    JNDs=JNDs_res;
+end
+
+
 %%%%%%*************************** Dissimilarity matrix subject specificity **************************%%%%%%%%
 %%%%% Between Vs Within Subjects Correlation %%%%%
 Between_Subjects_Corr=[];
@@ -216,7 +284,7 @@ k=1;
 while(1)
     R=randperm(length(SubjIDs_Sess));
     R=sort(R(1:2));
-    if(~ismember(R,Reps,'rows'))
+    if(~ismember(R,Reps,'rows') && (sum(mod(R,2))==1 || ~Individual_residual_use))
         D1=Dissim_in_each_sess{R(1)}(PickUpperTriangle);
         D2=Dissim_in_each_sess{R(2)}(PickUpperTriangle);
         C=corr(D1,D2,'Type',CorrType);
@@ -329,8 +397,10 @@ for i=1:length(SubjIDs)
     xlabel('#JNDs');
     ylabel('Dissimilarity value');
     set(gca,'fontsize',16);
-    ylim([0 1])
-    yticks([0 0.2 0.4 0.6 0.8 1]);
+    if(~Individual_residual_use)
+        ylim([0 1])
+        yticks([0 0.2 0.4 0.6 0.8 1]);
+    end
 end
 print(gcf,'Dissim and #JND correlation.png','-dpng','-r300');
 
